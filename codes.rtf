@@ -1,0 +1,1518 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2639
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red183\green111\blue179;\red23\green23\blue23;\red70\green137\blue204;
+\red194\green126\blue101;\red202\green202\blue202;\red67\green192\blue160;\red89\green138\blue67;\red212\green214\blue154;
+\red140\green211\blue254;\red167\green197\blue152;\red205\green173\blue106;\red89\green138\blue67;\red23\green23\blue23;
+\red202\green202\blue202;\red183\green111\blue179;\red70\green137\blue204;\red194\green126\blue101;\red67\green192\blue160;
+\red212\green214\blue154;\red140\green211\blue254;\red167\green197\blue152;\red205\green173\blue106;\red108\green121\blue122;
+\red24\green29\blue31;\red210\green220\blue220;\red110\green193\blue194;\red238\green138\blue18;\red22\green145\blue149;
+}
+{\*\expandedcolortbl;;\cssrgb\c77255\c52549\c75294;\cssrgb\c11765\c11765\c11765;\cssrgb\c33725\c61176\c83922;
+\cssrgb\c80784\c56863\c47059;\cssrgb\c83137\c83137\c83137;\cssrgb\c30588\c78824\c69020;\cssrgb\c41569\c60000\c33333;\cssrgb\c86275\c86275\c66667;
+\cssrgb\c61176\c86275\c99608;\cssrgb\c70980\c80784\c65882;\cssrgb\c84314\c72941\c49020;\cssrgb\c41569\c60000\c33333;\cssrgb\c11765\c11765\c11765;
+\cssrgb\c83137\c83137\c83137;\cssrgb\c77255\c52549\c75294;\cssrgb\c33725\c61176\c83922;\cssrgb\c80784\c56863\c47059;\cssrgb\c30588\c78824\c69020;
+\cssrgb\c86275\c86275\c66667;\cssrgb\c61176\c86275\c99608;\cssrgb\c70980\c80784\c65882;\cssrgb\c84314\c72941\c49020;\cssrgb\c49804\c54902\c55294;
+\cssrgb\c12157\c15294\c16471;\cssrgb\c85490\c89020\c89020;\cssrgb\c49804\c79608\c80392;\cssrgb\c95294\c61176\c7059;\cssrgb\c4706\c63137\c65098;
+}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 //black line\
+\pard\pardeftab720\partightenfactor0
+
+\f1 \cf2 \cb3 \expnd0\expndtw0\kerning0
+#include\cf4  \cf5 <stdio.h>\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "opencv2/opencv.hpp"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "opencv_aee.hpp"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "main.hpp"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "pi2c.h"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "opencv2/imgproc/imgproc.hpp"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 <opencv2/imgproc.hpp>\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "opencv2/highgui.hpp"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "iostream"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 <wiringPiI2C.h>\cf6 \cb1 \
+\
+\cf2 \cb3 using\cf6  \cf4 namespace\cf6  \cf7 cv\cf6 ;\cb1 \
+\cf2 \cb3 using\cf6  \cf4 namespace\cf6  \cf7 std\cf6 ;\cb1 \
+\cf8 \cb3 //blackline\cf6 \cb1 \
+\cf4 \cb3 void\cf6  \cf9 Linefinding\cf6 (\cf7 Mat\cf6  \cf10 hsvImage\cf6 ,\cf7 Mat\cf4 &\cf6  \cf10 output\cf6 , \cf4 int*\cf6  \cf10 error\cf6 ) \{\cb1 \
+\
+\cf8 \cb3  //Black\cf6 \cb1 \
+\cb3 Mat \cf10 blackMask\cf6 ;\cb1 \
+\cf9 \cb3 inRange\cf6 (\cf10 hsvImage\cf6 , \cf9 Scalar\cf6 (\cf11 0\cf6 , \cf11 0\cf6 , \cf11 0\cf6 ), \cf9 Scalar\cf6 (\cf11 179\cf6 , \cf11 255\cf6 , \cf11 1\cf6 ), \cf10 blackMask\cf6 );\cf8  //identifies pixels that are black throught the HSV values\cf6 \cb1 \
+\
+\cf8 \cb3 // Display the counts\cf6 \cb1 \
+\cf4 \cb3 int\cf6  \cf10 c1\cf6  = \cf9 countNonZero\cf6 (\cf10 blackMask\cf6 );\cb1 \
+\cf9 \cb3 printf\cf6 (\cf5 "Black: \cf10 %d\cf12 \\n\cf5 "\cf6 , \cf10 c1\cf6 );\cb1 \
+\
+\cf8 \cb3 // Write the counts onto the output image\cf6 \cb1 \
+\cf4 \cb3 int\cf6  \cf10 width\cf6  = \cf10 blackMask\cf6 .\cf10 cols\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 height\cf6  = \cf10 blackMask\cf6 .\cf10 rows\cf6 ;\cb1 \
+\cb3 Mat \cf10 countsImg\cf6  = \cf7 Mat\cf6 ::\cf9 zeros\cf6 (\cf10 height\cf6 , \cf10 width\cf6 , CV_8UC1);\cb1 \
+\cf10 \cb3 countsImg\cf6 .\cf9 setTo\cf6 (\cf11 255\cf6 , \cf10 blackMask\cf6 );\cb1 \
+\
+\cf8 \cb3 //create boxes act as sensors\cf6 \cb1 \
+\cf4 \cb3 int\cf6  \cf10 col_width\cf6  = \cf10 countsImg\cf6 .\cf10 cols\cf6  / \cf11 6\cf6 ;\cf8  // divide into 6 sections\cf6 \cb1 \
+\cf4 \cb3 int\cf6  \cf10 line1_x\cf6  = \cf10 col_width\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 line2_x\cf6  = \cf10 col_width\cf6  * \cf11 2\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 line3_x\cf6  = \cf10 col_width\cf6  * \cf11 3\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 line4_x\cf6  = \cf10 col_width\cf6  * \cf11 4\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 line5_x\cf6  = \cf10 col_width\cf6  * \cf11 5\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 line_y1\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 line_y2\cf6  = \cf10 countsImg\cf6 .\cf10 rows\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 thickness\cf6  = \cf11 1\cf6 ;\cb1 \
+\cf9 \cb3 line\cf6 (\cf10 countsImg\cf6 , \cf9 Point\cf6 (\cf10 line1_x\cf6 , \cf10 line_y1\cf6 ), \cf9 Point\cf6 (\cf10 line1_x\cf6 , \cf10 line_y2\cf6 ), \cf9 Scalar\cf6 (\cf11 255\cf6 ), \cf10 thickness\cf6 );\cb1 \
+\cf9 \cb3 line\cf6 (\cf10 countsImg\cf6 , \cf9 Point\cf6 (\cf10 line2_x\cf6 , \cf10 line_y1\cf6 ), \cf9 Point\cf6 (\cf10 line2_x\cf6 , \cf10 line_y2\cf6 ), \cf9 Scalar\cf6 (\cf11 255\cf6 ), \cf10 thickness\cf6 );\cb1 \
+\cf9 \cb3 line\cf6 (\cf10 countsImg\cf6 , \cf9 Point\cf6 (\cf10 line3_x\cf6 , \cf10 line_y1\cf6 ), \cf9 Point\cf6 (\cf10 line3_x\cf6 , \cf10 line_y2\cf6 ), \cf9 Scalar\cf6 (\cf11 255\cf6 ), \cf10 thickness\cf6 );\cb1 \
+\cf9 \cb3 line\cf6 (\cf10 countsImg\cf6 , \cf9 Point\cf6 (\cf10 line4_x\cf6 , \cf10 line_y1\cf6 ), \cf9 Point\cf6 (\cf10 line4_x\cf6 , \cf10 line_y2\cf6 ), \cf9 Scalar\cf6 (\cf11 255\cf6 ), \cf10 thickness\cf6 );\cb1 \
+\cf9 \cb3 line\cf6 (\cf10 countsImg\cf6 , \cf9 Point\cf6 (\cf10 line5_x\cf6 , \cf10 line_y1\cf6 ), \cf9 Point\cf6 (\cf10 line5_x\cf6 , \cf10 line_y2\cf6 ), \cf9 Scalar\cf6 (\cf11 255\cf6 ), \cf10 thickness\cf6 );\cb1 \
+\
+\cf8 \cb3 // count white pixels in each box\cf6 \cb1 \
+\cf4 \cb3 int\cf6  \cf10 box1\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 box2\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 box3\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 box4\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 box5\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 box6\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf2 \cb3 for\cf6  (\cf4 int\cf6  \cf10 y\cf6  = \cf11 0\cf6 ; \cf10 y\cf6  < \cf10 countsImg\cf6 .\cf10 rows\cf6 ; \cf10 y\cf6 ++) \{\cb1 \
+\cb3     \cf2 for\cf6  (\cf4 int\cf6  \cf10 x\cf6  = \cf11 0\cf6 ; \cf10 x\cf6  < \cf10 countsImg\cf6 .\cf10 cols\cf6 ; \cf10 x\cf6 ++) \{\cb1 \
+\cb3         \cf2 if\cf6  (\cf10 countsImg\cf6 .\cf10 at\cf6 <uchar>(\cf10 y\cf6 , \cf10 x\cf6 ) == \cf11 255\cf6 ) \{\cb1 \
+\cb3             \cf2 if\cf6  (\cf10 x\cf6  <= \cf10 line1_x\cf6  - \cf10 thickness\cf6 ) \{\cb1 \
+\cb3                 \cf10 box1\cf6 ++;\cb1 \
+\cb3             \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 x\cf6  > \cf10 line1_x\cf6  && \cf10 x\cf6  <= \cf10 line2_x\cf6  - \cf10 thickness\cf6 ) \{\cb1 \
+\cb3                 \cf10 box2\cf6 ++;\cb1 \
+\cb3             \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 x\cf6  > \cf10 line2_x\cf6  && \cf10 x\cf6  <= \cf10 line3_x\cf6  - \cf10 thickness\cf6 ) \{\cb1 \
+\cb3                 \cf10 box3\cf6 ++;\cb1 \
+\cb3             \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 x\cf6  > \cf10 line3_x\cf6  && \cf10 x\cf6  <= \cf10 line4_x\cf6  - \cf10 thickness\cf6 ) \{\cb1 \
+\cb3                 \cf10 box4\cf6 ++;\cb1 \
+\cb3             \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 x\cf6  > \cf10 line4_x\cf6  && \cf10 x\cf6  <= \cf10 line5_x\cf6  - \cf10 thickness\cf6 ) \{\cb1 \
+\cb3                 \cf10 box5\cf6 ++;\cb1 \
+\cb3             \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 x\cf6  > \cf10 line5_x\cf6  && \cf10 x\cf6  <= \cf10 countsImg\cf6 .\cf10 cols\cf6  - \cf10 thickness\cf6 ) \{\cb1 \
+\cb3                 \cf10 box6\cf6 ++;\cb1 \
+\cb3             \}\cb1 \
+\cb3         \}\cb1 \
+\cb3     \}\cb1 \
+\cb3 \}\cb1 \
+\
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in height: "\cf6  << \cf10 countsImg\cf6 .\cf10 cols\cf6  << \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in row: "\cf6  <<\cf10 countsImg\cf6 .\cf10 rows\cf6  << \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in box1 : "\cf6  \cf9 <<\cf6  \cf10 box1\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in box2: "\cf6  \cf9 <<\cf6  \cf10 box2\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in box3: "\cf6  \cf9 <<\cf6  \cf10 box3\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in box4: "\cf6  \cf9 <<\cf6  \cf10 box4\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in box5: "\cf6  \cf9 <<\cf6  \cf10 box5\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in box6: "\cf6  \cf9 <<\cf6  \cf10 box6\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\
+\
+\cf9 \cb3 imshow\cf6 (\cf5 "Counts"\cf6 , \cf10 countsImg\cf6 );\cb1 \
+\cf8 \cb3 //l1||r1 +l2|| r2+l3||r3\cf6 \cb1 \
+\cf8 \cb3 //max pixel count is 1664\cf6 \cb1 \
+\
+\cf8 \cb3 //PID solution to find error value\cf6 \cb1 \
+\cf4 \cb3 int\cf6  \cf10 fd\cf6  = \cf9 wiringPiI2CSetup\cf6 (\cf11 0x04\cf6 );\cf8   // address of the Arduino Nano on the I2C bus\cf6 \cb1 \
+\
+\cf4 \cb3 double\cf6  \cf10 total_pixels\cf6  = \cf10 box1\cf6  + \cf10 box2\cf6  + \cf10 box3\cf6  + \cf10 box4\cf6  + \cf10 box5\cf6  + \cf10 box6\cf6 ;\cb1 \
+\cf8 \cb3 //reference point is the middle of frame with the pixel coordinate of 160\cf6 \cb1 \
+\cf4 \cb3 double\cf6  \cf10 num1\cf6  = -\cf11 133.3333\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 num2\cf6  = -\cf11 80.0000\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 num3\cf6  = -\cf11 26.6666\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 num4\cf6  = \cf11 26.6666\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 num5\cf6  = \cf11 80.0000\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 num6\cf6  = \cf11 133.3333\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 weighted_avg\cf6  = ((\cf10 box1\cf6 *\cf10 num1\cf6 )+(\cf10 box2\cf6 *\cf10 num2\cf6 )+(\cf10 box3\cf6 *\cf10 num3\cf6 )+(\cf10 box4\cf6 *\cf10 num4\cf6 )+(\cf10 box5\cf6 *\cf10 num5\cf6 )+(\cf10 box6\cf6 *\cf10 num6\cf6 ))/\cf10 total_pixels\cf6 ;\cb1 \
+\cf8 \cb3 //double weighted_avg = ((box1*-21)+(box2*-12)+(box3*-5)+(box4*5)+(box5* 12)+(box6* 21))/total_pixels;\cf6 \cb1 \
+\cb3 *\cf10 error\cf6  = (\cf10 weighted_avg\cf6 );\cb1 \
+\cf8 \cb3 //max and min is 133.3333/133\cf6 \cb1 \
+\
+\cf8 \cb3 //wiringPiI2CWrite(fd, (int)error);  // send the error variable as an integer\cf6 \cb1 \
+\
+\cb3 \}\cb1 \
+\
+\cf8 \cb3 //Pi2c car(0x22); // Configure the I2C interface to the Car as a global variable\cf6 \cb1 \
+\
+\cf4 \cb3 void\cf6  \cf9 setup\cf6 (\cf4 void\cf6 ) \{\cb1 \
+\cb3     \cf9 setupCamera\cf6 (\cf11 320\cf6 , \cf11 20\cf6 );\cf8   // Enable the camera for OpenCV\cf6 \cb1 \
+\cb3 \}\cb1 \
+\
+\cf4 \cb3 int\cf6  \cf9 main\cf6 (\cf4 int\cf6  \cf10 argc\cf6 , \cf4 char**\cf6  \cf10 argv\cf6 ) \{\cb1 \
+\cb3     \cf9 setup\cf6 ();\cf8     // Call a setup function to prepare IO and devices\cf6 \cb1 \
+\
+\cb3     \cf9 namedWindow\cf6 (\cf5 "Photo"\cf6 );\cf8    // Create a GUI window called photo\cf6 \cb1 \
+\
+\cb3     \cf2 while\cf6 (\cf4 true\cf6 ) \{\cf8     // Main loop to perform image processing\cf6 \cb1 \
+\cb3         Mat \cf10 frame\cf6 ;\cb1 \
+\
+\cb3         \cf2 while\cf6 (\cf10 frame\cf6 .\cf9 empty\cf6 ()) \{\cb1 \
+\cb3             \cf10 frame\cf6  = \cf9 captureFrame\cf6 ();\cf8  // Capture a frame from the camera and store in a new matrix variable\cf6 \cb1 \
+\cb3         \}\cb1 \
+\
+\cf8 \cb3         // Rotate the frame by 180 degrees\cf6 \cb1 \
+\cb3         \cf9 rotate\cf6 (\cf10 frame\cf6 , \cf10 frame\cf6 , \cf7 cv\cf6 ::ROTATE_180);\cb1 \
+\cf8 \cb3         // Apply bilateral filter to the image to reduce noise while preserving edges\cf6 \cb1 \
+\cb3         Mat \cf10 bblurred\cf6 ;\cb1 \
+\cb3         \cf7 cv\cf6 ::\cf9 bilateralFilter\cf6 (\cf10 frame\cf6 , \cf10 bblurred\cf6 , \cf11 10\cf6 , \cf11 20\cf6 , \cf11 10\cf6 );\cb1 \
+\cf8 \cb3         // Convert the image from BGR to HSV format\cf6 \cb1 \
+\cb3         Mat \cf10 hsvImage\cf6 ;\cb1 \
+\cb3         \cf9 cvtColor\cf6 (\cf10 bblurred\cf6 , \cf10 hsvImage\cf6 , COLOR_BGR2HSV);\cb1 \
+\
+\cb3         Mat \cf10 output\cf6 ;\cb1 \
+\cb3         \cf4 int\cf6  \cf10 error\cf6 ;\cb1 \
+\cb3         \cf9 Linefinding\cf6 (\cf10 hsvImage\cf6 ,\cf10 output\cf6 , &\cf10 error\cf6 );\cb1 \
+\cb3         \cf10 cout\cf6  \cf9 <<\cf6  \cf5 "Error: "\cf6  \cf9 <<\cf6  \cf10 error\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\
+\cb3         Pi2c \cf10 arduino\cf6 (\cf11 4\cf6 );\cf8  //Create a new object "arduino" using address "0x04"\cf6 \cb1 \
+\cb3         \cf10 arduino\cf6 .\cf9 i2cWriteArduinoInt\cf6 (\cf10 error\cf6 );\cf8  //send error value to Arudino Nano\cf6 \cb1 \
+\
+\cb3         \cf7 cv\cf6 ::\cf9 imshow\cf6 (\cf5 "Photo"\cf6 , \cf10 frame\cf6 );\cf8  // Display the image in the window\cf6 \cb1 \
+\
+\cb3         \cf4 int\cf6  \cf10 key\cf6  = \cf7 cv\cf6 ::\cf9 waitKey\cf6 (\cf11 1\cf6 );\cf8  // Wait 1ms for a keypress (required to update windows)\cf6 \cb1 \
+\
+\cb3         \cf2 if\cf6  (\cf10 key\cf6  == \cf11 27\cf6 ) \{\cf8  // Check if the ESC key has been pressed\cf6 \cb1 \
+\cb3             \cf2 break\cf6 ;\cb1 \
+\cb3         \}\cb1 \
+\cb3     \}\cb1 \
+\cb3     \cf9 closeCV\cf6 ();\cf8  // Disable the camera and close any windows\cf6 \cb1 \
+\cb3     \cf2 return\cf6  \cf11 0\cf6 ;\cb1 \
+\cb3 \}\cb1 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0 \cf0 \kerning1\expnd0\expndtw0 \
+//symbol code\
+\pard\pardeftab720\partightenfactor0
+
+\f1 \cf13 \cb14 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec13 //symbol coode 29/04/23 draft 2\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 <stdio.h>\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "opencv2/opencv.hpp"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "opencv_aee.hpp"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "main.hpp"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "pi2c.h"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "opencv2/imgproc/imgproc.hpp"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "opencv2/highgui.hpp"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "iostream"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 <wiringPiI2C.h>\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 <opencv2/objdetect/objdetect.hpp>\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 <opencv2/highgui/highgui.hpp>\cf15 \cb1 \strokec15 \
+\
+\cf16 \cb14 \strokec16 using\cf15 \strokec15  \cf17 \strokec17 namespace\cf15 \strokec15  \cf19 \strokec19 cv\cf15 \strokec15 ;\cb1 \
+\cf16 \cb14 \strokec16 using\cf15 \strokec15  \cf17 \strokec17 namespace\cf15 \strokec15  \cf19 \strokec19 std\cf15 \strokec15 ;\cb1 \
+\
+\cf13 \cb14 \strokec13 //function prototype\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 void\cf15 \strokec15  \cf20 \strokec20 symbolfind\cf15 \strokec15 (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 pinkCount\cf15 \strokec15 , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match1\cf15 \strokec15  , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match2\cf15 \strokec15  , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match3\cf15 \strokec15  , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match4\cf15 \strokec15 , \cf19 \strokec19 cv\cf15 \strokec15 ::Mat* symbolImage);\cb1 \
+\
+\cf13 \cb14 \strokec13 //symbol\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 void\cf15 \strokec15  \cf20 \strokec20 Linefinding\cf15 \strokec15 (Mat \cf21 \strokec21 hsvImage\cf15 \strokec15 ,Mat& \cf21 \strokec21 output\cf15 \strokec15 , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 error\cf15 \strokec15 , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 pinkCount\cf15 \strokec15 , Mat* \cf21 \strokec21 symbolImage\cf15 \strokec15 ) \{\cb1 \
+\
+\cf13 \cb14 \strokec13     //RED\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 redMask\cf15 \strokec15 ;\cb1 \
+\cb14     \cf20 \strokec20 inRange\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 , \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 160\cf15 \strokec15 , \cf22 \strokec22 35\cf15 \strokec15 , \cf22 \strokec22 40\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 185\cf15 \strokec15 , \cf22 \strokec22 245\cf15 \strokec15 , \cf22 \strokec22 245\cf15 \strokec15 ), \cf21 \strokec21 redMask\cf15 \strokec15 );\cb1 \
+\cb14     \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 c1\cf15 \strokec15  = \cf20 \strokec20 countNonZero\cf15 \strokec15 (\cf21 \strokec21 redMask\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13     //Pink\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 pinkMask\cf15 \strokec15 ;\cb1 \
+\cb14     \cf20 \strokec20 inRange\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 , \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 128\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 128\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 218\cf15 \strokec15 , \cf22 \strokec22 112\cf15 \strokec15 ,\cf22 \strokec22 214\cf15 \strokec15 ), \cf21 \strokec21 pinkMask\cf15 \strokec15 );\cb1 \
+\cb14     \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 c6\cf15 \strokec15  = \cf20 \strokec20 countNonZero\cf15 \strokec15 (\cf21 \strokec21 pinkMask\cf15 \strokec15 );\cb1 \
+\cb14     *\cf21 \strokec21 pinkCount\cf15 \strokec15  = \cf21 \strokec21 c6\cf15 \strokec15 ;\cb1 \
+\cb14     *\cf21 \strokec21 symbolImage\cf15 \strokec15  = \cf21 \strokec21 pinkMask\cf15 \strokec15 ;\cb1 \
+\
+\cf13 \cb14 \strokec13 // Write the counts onto the output image\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 width\cf15 \strokec15  = \cf21 \strokec21 redMask\cf15 \strokec15 .\cf21 \strokec21 cols\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 height\cf15 \strokec15  = \cf21 \strokec21 redMask\cf15 \strokec15 .\cf21 \strokec21 rows\cf15 \strokec15 ;\cb1 \
+\cb14 Mat \cf21 \strokec21 countsImg\cf15 \strokec15  = \cf19 \strokec19 Mat\cf15 \strokec15 ::\cf20 \strokec20 zeros\cf15 \strokec15 (\cf21 \strokec21 height\cf15 \strokec15 , \cf21 \strokec21 width\cf15 \strokec15 , CV_8UC1);\cb1 \
+\cf21 \cb14 \strokec21 countsImg\cf15 \strokec15 .\cf20 \strokec20 setTo\cf15 \strokec15 (\cf22 \strokec22 255\cf15 \strokec15 , \cf21 \strokec21 redMask\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13 //create boxes act as sensors\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 col_width\cf15 \strokec15  = \cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 cols\cf15 \strokec15  / \cf22 \strokec22 6\cf15 \strokec15 ;\cf13 \strokec13  // divide into 6 sections\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line1_x\cf15 \strokec15  = \cf21 \strokec21 col_width\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line2_x\cf15 \strokec15  = \cf21 \strokec21 col_width\cf15 \strokec15  * \cf22 \strokec22 2\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line3_x\cf15 \strokec15  = \cf21 \strokec21 col_width\cf15 \strokec15  * \cf22 \strokec22 3\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line4_x\cf15 \strokec15  = \cf21 \strokec21 col_width\cf15 \strokec15  * \cf22 \strokec22 4\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line5_x\cf15 \strokec15  = \cf21 \strokec21 col_width\cf15 \strokec15  * \cf22 \strokec22 5\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line_y1\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line_y2\cf15 \strokec15  = \cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 rows\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 thickness\cf15 \strokec15  = \cf22 \strokec22 1\cf15 \strokec15 ;\cb1 \
+\cf20 \cb14 \strokec20 line\cf15 \strokec15 (\cf21 \strokec21 countsImg\cf15 \strokec15 , \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line1_x\cf15 \strokec15 , \cf21 \strokec21 line_y1\cf15 \strokec15 ), \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line1_x\cf15 \strokec15 , \cf21 \strokec21 line_y2\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 255\cf15 \strokec15 ), \cf21 \strokec21 thickness\cf15 \strokec15 );\cb1 \
+\cf20 \cb14 \strokec20 line\cf15 \strokec15 (\cf21 \strokec21 countsImg\cf15 \strokec15 , \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line2_x\cf15 \strokec15 , \cf21 \strokec21 line_y1\cf15 \strokec15 ), \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line2_x\cf15 \strokec15 , \cf21 \strokec21 line_y2\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 255\cf15 \strokec15 ), \cf21 \strokec21 thickness\cf15 \strokec15 );\cb1 \
+\cf20 \cb14 \strokec20 line\cf15 \strokec15 (\cf21 \strokec21 countsImg\cf15 \strokec15 , \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line3_x\cf15 \strokec15 , \cf21 \strokec21 line_y1\cf15 \strokec15 ), \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line3_x\cf15 \strokec15 , \cf21 \strokec21 line_y2\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 255\cf15 \strokec15 ), \cf21 \strokec21 thickness\cf15 \strokec15 );\cb1 \
+\cf20 \cb14 \strokec20 line\cf15 \strokec15 (\cf21 \strokec21 countsImg\cf15 \strokec15 , \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line4_x\cf15 \strokec15 , \cf21 \strokec21 line_y1\cf15 \strokec15 ), \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line4_x\cf15 \strokec15 , \cf21 \strokec21 line_y2\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 255\cf15 \strokec15 ), \cf21 \strokec21 thickness\cf15 \strokec15 );\cb1 \
+\cf20 \cb14 \strokec20 line\cf15 \strokec15 (\cf21 \strokec21 countsImg\cf15 \strokec15 , \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line5_x\cf15 \strokec15 , \cf21 \strokec21 line_y1\cf15 \strokec15 ), \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line5_x\cf15 \strokec15 , \cf21 \strokec21 line_y2\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 255\cf15 \strokec15 ), \cf21 \strokec21 thickness\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13 // count white pixels in each box\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 box1\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 box2\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 box3\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 box4\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 box5\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 box6\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf16 \cb14 \strokec16 for\cf15 \strokec15  (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 y\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ; \cf21 \strokec21 y\cf15 \strokec15  < \cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 rows\cf15 \strokec15 ; \cf21 \strokec21 y\cf15 \strokec15 ++) \{\cb1 \
+\cb14     \cf16 \strokec16 for\cf15 \strokec15  (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 x\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ; \cf21 \strokec21 x\cf15 \strokec15  < \cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 cols\cf15 \strokec15 ; \cf21 \strokec21 x\cf15 \strokec15 ++) \{\cb1 \
+\cb14         \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 at\cf15 \strokec15 <uchar>(\cf21 \strokec21 y\cf15 \strokec15 , \cf21 \strokec21 x\cf15 \strokec15 ) == \cf22 \strokec22 255\cf15 \strokec15 ) \{\cb1 \
+\cb14             \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 x\cf15 \strokec15  <= \cf21 \strokec21 line1_x\cf15 \strokec15  - \cf21 \strokec21 thickness\cf15 \strokec15 ) \{\cb1 \
+\cb14                 \cf21 \strokec21 box1\cf15 \strokec15 ++;\cb1 \
+\cb14             \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 x\cf15 \strokec15  > \cf21 \strokec21 line1_x\cf15 \strokec15  && \cf21 \strokec21 x\cf15 \strokec15  <= \cf21 \strokec21 line2_x\cf15 \strokec15  - \cf21 \strokec21 thickness\cf15 \strokec15 ) \{\cb1 \
+\cb14                 \cf21 \strokec21 box2\cf15 \strokec15 ++;\cb1 \
+\cb14             \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 x\cf15 \strokec15  > \cf21 \strokec21 line2_x\cf15 \strokec15  && \cf21 \strokec21 x\cf15 \strokec15  <= \cf21 \strokec21 line3_x\cf15 \strokec15  - \cf21 \strokec21 thickness\cf15 \strokec15 ) \{\cb1 \
+\cb14                 \cf21 \strokec21 box3\cf15 \strokec15 ++;\cb1 \
+\cb14             \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 x\cf15 \strokec15  > \cf21 \strokec21 line3_x\cf15 \strokec15  && \cf21 \strokec21 x\cf15 \strokec15  <= \cf21 \strokec21 line4_x\cf15 \strokec15  - \cf21 \strokec21 thickness\cf15 \strokec15 ) \{\cb1 \
+\cb14                 \cf21 \strokec21 box4\cf15 \strokec15 ++;\cb1 \
+\cb14             \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 x\cf15 \strokec15  > \cf21 \strokec21 line4_x\cf15 \strokec15  && \cf21 \strokec21 x\cf15 \strokec15  <= \cf21 \strokec21 line5_x\cf15 \strokec15  - \cf21 \strokec21 thickness\cf15 \strokec15 ) \{\cb1 \
+\cb14                 \cf21 \strokec21 box5\cf15 \strokec15 ++;\cb1 \
+\cb14             \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 x\cf15 \strokec15  > \cf21 \strokec21 line5_x\cf15 \strokec15  && \cf21 \strokec21 x\cf15 \strokec15  <= \cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 cols\cf15 \strokec15  - \cf21 \strokec21 thickness\cf15 \strokec15 ) \{\cb1 \
+\cb14                 \cf21 \strokec21 box6\cf15 \strokec15 ++;\cb1 \
+\cb14             \}\cb1 \
+\cb14         \}\cb1 \
+\cb14     \}\cb1 \
+\cb14 \}\cb1 \
+\
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in box1 : "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 box1\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in box2: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 box2\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in box3: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 box3\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in box4: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 box4\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in box5: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 box5\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in box6: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 box6\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\
+\
+\cf21 \cb14 \strokec21 imshow\cf15 \strokec15 (\cf18 \strokec18 "Counts"\cf15 \strokec15 , \cf21 \strokec21 countsImg\cf15 \strokec15 );\cb1 \
+\cf13 \cb14 \strokec13 //l1||r1 +l2|| r2+l3||r3\cf15 \cb1 \strokec15 \
+\cf13 \cb14 \strokec13 //max pixel count is 1664\cf15 \cb1 \strokec15 \
+\
+\cf13 \cb14 \strokec13 //PID solution to find error value\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 fd\cf15 \strokec15  = \cf20 \strokec20 wiringPiI2CSetup\cf15 \strokec15 (\cf22 \strokec22 0x04\cf15 \strokec15 );\cf13 \strokec13   // address of the Arduino Nano on the I2C bus\cf15 \cb1 \strokec15 \
+\
+\
+\cb14 \}\cb1 \
+\
+\cf13 \cb14 \strokec13 //Pi2c car(0x22); // Configure the I2C interface to the Car as a global variable\cf15 \cb1 \strokec15 \
+\
+\cf17 \cb14 \strokec17 void\cf15 \strokec15  \cf20 \strokec20 setup\cf15 \strokec15 (\cf17 \strokec17 void\cf15 \strokec15 ) \{\cb1 \
+\cb14     \cf20 \strokec20 setupCamera\cf15 \strokec15 (\cf22 \strokec22 325\cf15 \strokec15 , \cf22 \strokec22 20\cf15 \strokec15 );\cf13 \strokec13   // Enable the camera for OpenCV\cf15 \cb1 \strokec15 \
+\cb14 \}\cb1 \
+\
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf20 \strokec20 main\cf15 \strokec15 (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 argc\cf15 \strokec15 , \cf17 \strokec17 char\cf15 \strokec15 ** \cf21 \strokec21 argv\cf15 \strokec15 ) \{\cb1 \
+\cb14     \cf20 \strokec20 setup\cf15 \strokec15 ();\cf13 \strokec13     // Call a setup function to prepare IO and devices\cf15 \cb1 \strokec15 \
+\
+\cb14     \cf20 \strokec20 namedWindow\cf15 \strokec15 (\cf18 \strokec18 "Photo"\cf15 \strokec15 );\cf13 \strokec13    // Create a GUI window called photo\cf15 \cb1 \strokec15 \
+\
+\cb14     \cf16 \strokec16 while\cf15 \strokec15 (\cf17 \strokec17 true\cf15 \strokec15 ) \{\cf13 \strokec13     // Main loop to perform image processing\cf15 \cb1 \strokec15 \
+\cb14         Mat \cf21 \strokec21 frame\cf15 \strokec15 ;\cb1 \
+\
+\cb14         \cf16 \strokec16 while\cf15 \strokec15 (\cf21 \strokec21 frame\cf15 \strokec15 .\cf20 \strokec20 empty\cf15 \strokec15 ()) \{\cb1 \
+\cb14             \cf21 \strokec21 frame\cf15 \strokec15  = \cf20 \strokec20 captureFrame\cf15 \strokec15 ();\cf13 \strokec13  // Capture a frame from the camera and store in a new matrix variable\cf15 \cb1 \strokec15 \
+\cb14         \}\cb1 \
+\
+\cf13 \cb14 \strokec13         // Rotate the frame by 180 degrees\cf15 \cb1 \strokec15 \
+\cb14         \cf20 \strokec20 rotate\cf15 \strokec15 (\cf21 \strokec21 frame\cf15 \strokec15 , \cf21 \strokec21 frame\cf15 \strokec15 , \cf19 \strokec19 cv\cf15 \strokec15 ::ROTATE_180);\cb1 \
+\cf13 \cb14 \strokec13         //resize(frame, frame, Size(320, 60));\cf15 \cb1 \strokec15 \
+\
+\cf13 \cb14 \strokec13         // Apply bilateral filter to the image to reduce noise while preserving edges\cf15 \cb1 \strokec15 \
+\cb14         Mat \cf21 \strokec21 bblurred\cf15 \strokec15 ;\cb1 \
+\cb14         \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 bilateralFilter\cf15 \strokec15 (\cf21 \strokec21 frame\cf15 \strokec15 , \cf21 \strokec21 bblurred\cf15 \strokec15 , \cf22 \strokec22 10\cf15 \strokec15 , \cf22 \strokec22 20\cf15 \strokec15 , \cf22 \strokec22 10\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13         // Convert the image from BGR to HSV format\cf15 \cb1 \strokec15 \
+\cb14         Mat \cf21 \strokec21 hsvImage\cf15 \strokec15 ;\cb1 \
+\cb14         \cf21 \strokec21 cvtColor\cf15 \strokec15 (\cf21 \strokec21 bblurred\cf15 \strokec15 , \cf21 \strokec21 hsvImage\cf15 \strokec15 , COLOR_BGR2HSV);\cb1 \
+\
+\cb14         Mat \cf21 \strokec21 output\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 error\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 pinkCount\cf15 \strokec15 ;\cb1 \
+\cb14         Mat \cf21 \strokec21 symbolImage\cf15 \strokec15 ;\cb1 \
+\cb14         \cf20 \strokec20 Linefinding\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 ,\cf21 \strokec21 output\cf15 \strokec15 , &\cf21 \strokec21 error\cf15 \strokec15 , &\cf21 \strokec21 pinkCount\cf15 \strokec15 , &\cf21 \strokec21 symbolImage\cf15 \strokec15 );\cb1 \
+\cb14         \cf21 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Error: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 error\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cb14         \cf21 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Pink count: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 pinkCount\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 match1\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 match2\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 match3\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 match4\cf15 \strokec15 ;\cb1 \
+\cb14         \cf20 \strokec20 symbolfind\cf15 \strokec15 (\cf21 \strokec21 pinkCount\cf15 \strokec15 , &\cf21 \strokec21 match1\cf15 \strokec15  , &\cf21 \strokec21 match2\cf15 \strokec15  , &\cf21 \strokec21 match3\cf15 \strokec15  , &\cf21 \strokec21 match4\cf15 \strokec15 , &\cf21 \strokec21 symbolImage\cf15 \strokec15 );\cb1 \
+\cb14         \cf20 \strokec20 Linefinding\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 ,\cf21 \strokec21 output\cf15 \strokec15 , &\cf21 \strokec21 error\cf15 \strokec15 , &\cf21 \strokec21 pinkCount\cf15 \strokec15 , &\cf21 \strokec21 symbolImage\cf15 \strokec15 );\cb1 \
+\
+\cb14     \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 match1\cf15 \strokec15  > \cf22 \strokec22 80\cf15 \strokec15 )\{\cb1 \
+\cb14             \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "Symbol match percentage: \cf21 \strokec21 %f\cf18 \strokec18 "\cf15 \strokec15  ,\cf21 \strokec21 match1\cf15 \strokec15 );\cb1 \
+\cb14         \} \cf16 \strokec16 else\cf15 \strokec15 \{\cb1 \
+\cb14         \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "No match (Cirle)"\cf15 \strokec15 );\cb1 \
+\cb14         \}\cb1 \
+\
+\cb14         \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 match2\cf15 \strokec15  > \cf22 \strokec22 80\cf15 \strokec15 )\{\cb1 \
+\cb14             \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "Symbol match percentage: \cf21 \strokec21 %f\cf18 \strokec18 "\cf15 \strokec15  ,\cf21 \strokec21 match2\cf15 \strokec15 );\cb1 \
+\cb14         \} \cf16 \strokec16 else\cf15 \strokec15 \{\cb1 \
+\cb14         \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "No match (Star)"\cf15 \strokec15 );\cb1 \
+\cb14         \}\cb1 \
+\
+\cb14         \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 match3\cf15 \strokec15  > \cf22 \strokec22 80\cf15 \strokec15 )\{\cb1 \
+\cb14             \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "Symbol match percentage: \cf21 \strokec21 %f\cf18 \strokec18 "\cf15 \strokec15  ,\cf21 \strokec21 match3\cf15 \strokec15 );\cb1 \
+\cb14         \} \cf16 \strokec16 else\cf15 \strokec15 \{\cb1 \
+\cb14         \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "No match (Triangle)"\cf15 \strokec15 );\cb1 \
+\cb14         \}\cb1 \
+\cb14         \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 match4\cf15 \strokec15  > \cf22 \strokec22 80\cf15 \strokec15 )\{\cb1 \
+\cb14             \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "Symbol match percentage: \cf21 \strokec21 %f\cf18 \strokec18 "\cf15 \strokec15  ,\cf21 \strokec21 match4\cf15 \strokec15 );\cb1 \
+\cb14         \} \cf16 \strokec16 else\cf15 \strokec15 \{\cb1 \
+\cb14         \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "No match (Umbrella)"\cf15 \strokec15 );\cb1 \
+\cb14         \}\cb1 \
+\
+\cf13 \cb14 \strokec13         //Pi2c arduino(4); //Create a new object "arduino" using address "0x04"\cf15 \cb1 \strokec15 \
+\cf13 \cb14 \strokec13         //arduino.i2cWriteArduinoInt(error); //send error value to Arudino Nano\cf15 \cb1 \strokec15 \
+\
+\cb14         \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 imshow\cf15 \strokec15 (\cf18 \strokec18 "Photo"\cf15 \strokec15 , \cf21 \strokec21 frame\cf15 \strokec15 );\cf13 \strokec13  // Display the image in the window\cf15 \cb1 \strokec15 \
+\
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 key\cf15 \strokec15  = \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 waitKey\cf15 \strokec15 (\cf22 \strokec22 1\cf15 \strokec15 );\cf13 \strokec13  // Wait 1ms for a keypress (required to update windows)\cf15 \cb1 \strokec15 \
+\
+\cb14         \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 key\cf15 \strokec15  == \cf22 \strokec22 27\cf15 \strokec15 ) \{\cf13 \strokec13  // Check if the ESC key has been pressed\cf15 \cb1 \strokec15 \
+\cb14             \cf16 \strokec16 break\cf15 \strokec15 ;\cb1 \
+\cb14         \}\cb1 \
+\cb14     \}\cb1 \
+\
+\cb14     \cf20 \strokec20 closeCV\cf15 \strokec15 ();\cf13 \strokec13  // Disable the camera and close any windows\cf15 \cb1 \strokec15 \
+\cb14     \cf16 \strokec16 return\cf15 \strokec15  \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cb14 \}\cb1 \
+\
+\
+\cf17 \cb14 \strokec17 void\cf15 \strokec15  \cf20 \strokec20 symbolfind\cf15 \strokec15 (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 pinkCount\cf15 \strokec15 , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match1\cf15 \strokec15  , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match2\cf15 \strokec15  , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match3\cf15 \strokec15  , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match4\cf15 \strokec15 , \cf19 \strokec19 cv\cf15 \strokec15 ::Mat* symbolImage)\{\cb1 \
+\
+\cf13 \cb14 \strokec13     //if there are pink pixels code executes\cf15 \cb1 \strokec15 \
+\cb14     \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 pinkCount\cf15 \strokec15  > \cf22 \strokec22 1000\cf15 \strokec15 )\{\cb1 \
+\
+\cb14     \cf20 \strokec20 resizeCamera\cf15 \strokec15 (\cf22 \strokec22 400\cf15 \strokec15 ,\cf22 \strokec22 400\cf15 \strokec15 );\cf13 \strokec13  // Resize the camera frame\cf15 \cb1 \strokec15 \
+\
+\cb14     \cf19 \strokec19 std\cf15 \strokec15 ::\cf19 \strokec19 vector\cf15 \strokec15 <\cf19 \strokec19 std\cf15 \strokec15 ::vector<\cf19 \strokec19 cv\cf15 \strokec15 ::Point> > \cf21 \strokec21 contours\cf15 \strokec15 ;\cb1 \
+\cb14     \cf19 \strokec19 std\cf15 \strokec15 ::vector<\cf19 \strokec19 cv\cf15 \strokec15 ::Vec4i> hierarchy;\cb1 \
+\cb14     \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 findContours\cf15 \strokec15 (symbolImage, \cf21 \strokec21 contours\cf15 \strokec15 , hierarchy, \cf19 \strokec19 cv\cf15 \strokec15 ::RETR_TREE, \cf19 \strokec19 cv\cf15 \strokec15 ::CHAIN_APPROX_SIMPLE, \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 Point\cf15 \strokec15 (\cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 ));\cf13 \strokec13  // Find contours\cf15 \cb1 \strokec15 \
+\
+\cb14     \cf19 \strokec19 std\cf15 \strokec15 ::\cf19 \strokec19 vector\cf15 \strokec15 <\cf19 \strokec19 std\cf15 \strokec15 ::vector<\cf19 \strokec19 cv\cf15 \strokec15 ::Point> > \cf21 \strokec21 approxedcontours\cf15 \strokec15 (\cf21 \strokec21 contours\cf15 \strokec15 .\cf20 \strokec20 size\cf15 \strokec15 ());\cf13 \strokec13  // Array for new contours\cf15 \cb1 \strokec15 \
+\cb14     \cf16 \strokec16 for\cf15 \strokec15  (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 i\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ; \cf21 \strokec21 i\cf15 \strokec15  < \cf21 \strokec21 contours\cf15 \strokec15 .\cf20 \strokec20 size\cf15 \strokec15 (); \cf21 \strokec21 i\cf15 \strokec15 ++)\cb1 \
+\cb14     \{\cb1 \
+\cb14         \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 approxPolyDP\cf15 \strokec15 (\cf21 \strokec21 contours\cf15 \strokec15 [\cf21 \strokec21 i\cf15 \strokec15 ], \cf21 \strokec21 approxedcontours\cf15 \strokec15 [\cf21 \strokec21 i\cf15 \strokec15 ], \cf22 \strokec22 10\cf15 \strokec15 , \cf17 \strokec17 true\cf15 \strokec15 );\cf13 \strokec13  // Approximate the contour\cf15 \cb1 \strokec15 \
+\cb14     \}\cb1 \
+\
+\cb14     \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 drawContours\cf15 \strokec15 (symbolImage, \cf21 \strokec21 approxedcontours\cf15 \strokec15 , -\cf22 \strokec22 1\cf15 \strokec15 , \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 ), \cf22 \strokec22 2\cf15 \strokec15 );\cf13 \strokec13  // Draw the approximated contours on the image\cf15 \cb1 \strokec15 \
+\
+\cb14     \cf19 \strokec19 cv\cf15 \strokec15 ::Rect bounding_rect = \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 boundingRect\cf15 \strokec15 (\cf21 \strokec21 approxedcontours\cf15 \strokec15 [\cf22 \strokec22 0\cf15 \strokec15 ]);\cf13 \strokec13  // Find the bounding rectangle around the contours\cf15 \cb1 \strokec15 \
+\cb14     \cf16 \strokec16 for\cf15 \strokec15  (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 i\cf15 \strokec15  = \cf22 \strokec22 1\cf15 \strokec15 ; \cf21 \strokec21 i\cf15 \strokec15  < \cf21 \strokec21 approxedcontours\cf15 \strokec15 .\cf20 \strokec20 size\cf15 \strokec15 (); \cf21 \strokec21 i\cf15 \strokec15 ++)\cb1 \
+\cb14     \{\cb1 \
+\cb14         bounding_rect |= \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 boundingRect\cf15 \strokec15 (\cf21 \strokec21 approxedcontours\cf15 \strokec15 [\cf21 \strokec21 i\cf15 \strokec15 ]);\cb1 \
+\cb14     \}\cb1 \
+\
+\cb14     \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 rectangle\cf15 \strokec15 (image_HSV1, bounding_rect, \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 ),LINE_8);\cf13 \strokec13  // Draw the bounding rectangle on the image\cf15 \cb1 \strokec15 \
+\
+\
+\cb14     \cf17 \strokec17 double\cf15 \strokec15  \cf21 \strokec21 maxArea\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cb14     \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 maxAreaIdx\cf15 \strokec15  = -\cf22 \strokec22 1\cf15 \strokec15 ;\cb1 \
+\cb14     \cf16 \strokec16 for\cf15 \strokec15  (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 i\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ; \cf21 \strokec21 i\cf15 \strokec15  < \cf21 \strokec21 contours\cf15 \strokec15 .\cf20 \strokec20 size\cf15 \strokec15 (); \cf21 \strokec21 i\cf15 \strokec15 ++) \{\cb1 \
+\cb14         \cf17 \strokec17 double\cf15 \strokec15  \cf21 \strokec21 area\cf15 \strokec15  = \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 contourArea\cf15 \strokec15 (\cf21 \strokec21 contours\cf15 \strokec15 [\cf21 \strokec21 i\cf15 \strokec15 ]);\cb1 \
+\cb14             \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 area\cf15 \strokec15  > \cf21 \strokec21 maxArea\cf15 \strokec15 ) \{\cb1 \
+\cb14             \cf21 \strokec21 maxArea\cf15 \strokec15  = \cf21 \strokec21 area\cf15 \strokec15 ;\cb1 \
+\cb14             \cf21 \strokec21 maxAreaIdx\cf15 \strokec15  = \cf21 \strokec21 i\cf15 \strokec15 ;\cb1 \
+\cb14                                 \}\cb1 \
+\cb14         \}\cb1 \
+\
+\cb14     Rect \cf21 \strokec21 bRect\cf15 \strokec15  = \cf20 \strokec20 bounding_Rect\cf15 \strokec15 (\cf21 \strokec21 contours\cf15 \strokec15 [\cf21 \strokec21 maxAreaIdx\cf15 \strokec15 ]);\cb1 \
+\
+\cb14     Point2f \cf21 \strokec21 src_corners\cf15 \strokec15 [\cf22 \strokec22 4\cf15 \strokec15 ];\cb1 \
+\cb14     \cf21 \strokec21 src_corners\cf15 \strokec15 [\cf22 \strokec22 0\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 x\cf15 \strokec15 , \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 y\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 src_corners\cf15 \strokec15 [\cf22 \strokec22 1\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 x\cf15 \strokec15  + \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 width\cf15 \strokec15 , \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 y\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 src_corners\cf15 \strokec15 [\cf22 \strokec22 2\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 x\cf15 \strokec15  + \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 width\cf15 \strokec15 , \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 y\cf15 \strokec15  + \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 height\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 src_corners\cf15 \strokec15 [\cf22 \strokec22 3\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 x\cf15 \strokec15 , \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 y\cf15 \strokec15  + \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 height\cf15 \strokec15 );\cb1 \
+\
+\cb14     Point2f \cf21 \strokec21 dst_corners\cf15 \strokec15 [\cf22 \strokec22 4\cf15 \strokec15 ];\cb1 \
+\cb14     \cf21 \strokec21 dst_corners\cf15 \strokec15 [\cf22 \strokec22 0\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 dst_corners\cf15 \strokec15 [\cf22 \strokec22 1\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf22 \strokec22 349\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 dst_corners\cf15 \strokec15 [\cf22 \strokec22 2\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf22 \strokec22 349\cf15 \strokec15 , \cf22 \strokec22 349\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 dst_corners\cf15 \strokec15 [\cf22 \strokec22 3\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 349\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13     //transform symbol\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 transform_matrix\cf15 \strokec15  = \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 getPerspectiveTransform\cf15 \strokec15 (\cf21 \strokec21 src_corners\cf15 \strokec15 , \cf21 \strokec21 dst_corners\cf15 \strokec15 );\cb1 \
+\cb14     Mat \cf21 \strokec21 output_image\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 warpPerspective\cf15 \strokec15 (symbolImage, \cf21 \strokec21 output_image\cf15 \strokec15 , \cf21 \strokec21 transform_matrix\cf15 \strokec15 , \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 Size\cf15 \strokec15 (\cf22 \strokec22 350\cf15 \strokec15 , \cf22 \strokec22 350\cf15 \strokec15 ));\cb1 \
+\
+\cf13 \cb14 \strokec13     //loads images\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 sym1\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 sym1\cf15 \strokec15  = \cf20 \strokec20 imread\cf15 \strokec15 (\cf18 \strokec18 "CirleRL.png"\cf15 \strokec15 );\cb1 \
+\cb14     Mat \cf21 \strokec21 sym2\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 sym2\cf15 \strokec15  = \cf20 \strokec20 imread\cf15 \strokec15 (\cf18 \strokec18 "StarGL.png"\cf15 \strokec15 );\cb1 \
+\cb14     Mat \cf21 \strokec21 sym3\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 sym3\cf15 \strokec15  = \cf20 \strokec20 imread\cf15 \strokec15 (\cf18 \strokec18 "TriangleBL.png"\cf15 \strokec15 );\cb1 \
+\cb14     Mat \cf21 \strokec21 sym4\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 sym4\cf15 \strokec15  = \cf20 \strokec20 imread\cf15 \strokec15 (\cf18 \strokec18 "UmbrellaYL.png"\cf15 \strokec15 );\cb1 \
+\
+\
+\cf13 \cb14 \strokec13     //checks if image has loaded\cf15 \cb1 \strokec15 \
+\cb14     \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 sym1\cf15 \strokec15 .\cf20 \strokec20 empty\cf15 \strokec15 () || \cf21 \strokec21 sym2\cf15 \strokec15 .\cf20 \strokec20 empty\cf15 \strokec15 () || \cf21 \strokec21 sym3\cf15 \strokec15 .\cf20 \strokec20 empty\cf15 \strokec15 () || \cf21 \strokec21 sym4\cf15 \strokec15 .\cf20 \strokec20 empty\cf15 \strokec15 ()) \{\cb1 \
+\cf13 \cb14 \strokec13     // check if any of the images failed to load\cf15 \cb1 \strokec15 \
+\cb14     \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "Failed to load image(s)!\cf23 \strokec23 \\n\cf18 \strokec18 "\cf15 \strokec15 );\cb1 \
+\
+\cb14     \}\cb1 \
+\
+\cb14     \cf21 \strokec21 imshow\cf15 \strokec15 (\cf18 \strokec18 "s1"\cf15 \strokec15 , \cf21 \strokec21 sym1\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 imshow\cf15 \strokec15 (\cf18 \strokec18 "s2"\cf15 \strokec15 ,\cf21 \strokec21 sym2\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 imshow\cf15 \strokec15 (\cf18 \strokec18 "s3"\cf15 \strokec15 ,\cf21 \strokec21 sym3\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 imshow\cf15 \strokec15 (\cf18 \strokec18 "s4"\cf15 \strokec15 , \cf21 \strokec21 sym4\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13     //converts to gray scale\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 sym1Gray\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 cvtColor\cf15 \strokec15 (\cf21 \strokec21 sym1\cf15 \strokec15 , \cf21 \strokec21 sym1Gray\cf15 \strokec15 , COLOR_BGR2GRAY);\cb1 \
+\cb14     Mat \cf21 \strokec21 sym2Gray\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 cvtColor\cf15 \strokec15 (\cf21 \strokec21 sym2\cf15 \strokec15 , \cf21 \strokec21 sym2Gray\cf15 \strokec15 , COLOR_BGR2GRAY);\cb1 \
+\cb14     Mat \cf21 \strokec21 sym3Gray\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 cvtColor\cf15 \strokec15 (\cf21 \strokec21 sym3\cf15 \strokec15 , \cf21 \strokec21 sym3Gray\cf15 \strokec15 , COLOR_BGR2GRAY);\cb1 \
+\cb14     Mat \cf21 \strokec21 sym4Gray\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 cvtColor\cf15 \strokec15 (\cf21 \strokec21 sym4\cf15 \strokec15 , \cf21 \strokec21 sym4Gray\cf15 \strokec15 , COLOR_BGR2GRAY);\cb1 \
+\
+\cf13 \cb14 \strokec13     //converts gray image to binary\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 sym1Bin\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 threshold\cf15 \strokec15 (\cf21 \strokec21 sym1Gray\cf15 \strokec15 , \cf21 \strokec21 sym1Bin\cf15 \strokec15 , \cf22 \strokec22 200\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 , THRESH_BINARY);\cb1 \
+\cb14     Mat \cf21 \strokec21 sym2Bin\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 threshold\cf15 \strokec15 (\cf21 \strokec21 sym2Gray\cf15 \strokec15 , \cf21 \strokec21 sym2Bin\cf15 \strokec15 , \cf22 \strokec22 200\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 , THRESH_BINARY);\cb1 \
+\cb14     Mat \cf21 \strokec21 sym3Bin\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 threshold\cf15 \strokec15 (\cf21 \strokec21 sym3Gray\cf15 \strokec15 , \cf21 \strokec21 sym3Bin\cf15 \strokec15 , \cf22 \strokec22 200\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 , THRESH_BINARY);\cb1 \
+\cb14     Mat \cf21 \strokec21 sym4Bin\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 threshold\cf15 \strokec15 (\cf21 \strokec21 sym4Gray\cf15 \strokec15 , \cf21 \strokec21 sym4Bin\cf15 \strokec15 , \cf22 \strokec22 200\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 , THRESH_BINARY);\cb1 \
+\
+\cf13 \cb14 \strokec13     //compares frame to new binary image\cf15 \cb1 \strokec15 \
+\cb14     *\cf21 \strokec21 match1\cf15 \strokec15  = \cf20 \strokec20 compareImages\cf15 \strokec15 (\cf21 \strokec21 output_image\cf15 \strokec15 ,\cf21 \strokec21 sym1Bin\cf15 \strokec15 );\cb1 \
+\cb14     *\cf21 \strokec21 match2\cf15 \strokec15  = \cf20 \strokec20 compareImages\cf15 \strokec15 (\cf21 \strokec21 output_image\cf15 \strokec15 ,\cf21 \strokec21 sym2Bin\cf15 \strokec15 );\cb1 \
+\cb14     *\cf21 \strokec21 match3\cf15 \strokec15  = \cf20 \strokec20 compareImages\cf15 \strokec15 (\cf21 \strokec21 output_image\cf15 \strokec15 ,\cf21 \strokec21 sym3Bin\cf15 \strokec15 );\cb1 \
+\cb14     *\cf21 \strokec21 match4\cf15 \strokec15  = \cf20 \strokec20 compareImages\cf15 \strokec15 (\cf21 \strokec21 output_image\cf15 \strokec15 ,\cf21 \strokec21 sym4Bin\cf15 \strokec15 );\cb1 \
+\cb14 \}\cb1 \
+\cb14 \}\cb1 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
+\
+//Coloured line\
+\pard\pardeftab720\partightenfactor0
+
+\f1 \cf2 \cb3 \expnd0\expndtw0\kerning0
+#include\cf4  \cf5 <stdio.h>\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "opencv2/opencv.hpp"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "opencv_aee.hpp"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "main.hpp"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "pi2c.h"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "opencv2/imgproc/imgproc.hpp"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "opencv2/highgui.hpp"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 "iostream"\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 <wiringPiI2C.h>\cf6 \cb1 \
+\
+\cf2 \cb3 using\cf6  \cf4 namespace\cf6  \cf7 cv\cf6 ;\cb1 \
+\cf2 \cb3 using\cf6  \cf4 namespace\cf6  \cf7 std\cf6 ;\cb1 \
+\
+\cf4 \cb3 void\cf6  \cf9 Linefinding\cf6 (\cf7 Mat\cf6  \cf10 hsvImage\cf6 ,\cf7 Mat\cf4 &\cf6  \cf10 output\cf6 , \cf4 int*\cf6  \cf10 error\cf6 ) \{\cb1 \
+\
+\cf8 \cb3     //RED\cf6 \cb1 \
+\cb3     Mat \cf10 redMask\cf6 ;\cb1 \
+\cb3     \cf9 inRange\cf6 (\cf10 hsvImage\cf6 , \cf9 Scalar\cf6 (\cf11 160\cf6 , \cf11 35\cf6 , \cf11 40\cf6 ), \cf9 Scalar\cf6 (\cf11 185\cf6 , \cf11 245\cf6 , \cf11 245\cf6 ), \cf10 redMask\cf6 );\cb1 \
+\cb3     \cf4 int\cf6  \cf10 c1\cf6  = \cf9 countNonZero\cf6 (\cf10 redMask\cf6 );\cb1 \
+\cb3     \cf9 threshold\cf6 (\cf10 redMask\cf6 , \cf10 redMask\cf6 , \cf11 1\cf6 , \cf11 255\cf6 , THRESH_BINARY);\cb1 \
+\
+\cf8 \cb3     //Green\cf6 \cb1 \
+\cb3     Mat \cf10 greenMask\cf6 ;\cb1 \
+\cb3     \cf9 inRange\cf6 (\cf10 hsvImage\cf6 , \cf9 Scalar\cf6 (\cf11 75\cf6 , \cf11 55\cf6 , \cf11 40\cf6 ), \cf9 Scalar\cf6 (\cf11 95\cf6 , \cf11 255\cf6 , \cf11 255\cf6 ), \cf10 greenMask\cf6 );\cb1 \
+\cb3     \cf4 int\cf6  \cf10 c2\cf6  = \cf9 countNonZero\cf6 (\cf10 greenMask\cf6 );\cb1 \
+\cb3     \cf9 threshold\cf6 (\cf10 greenMask\cf6 , \cf10 greenMask\cf6 , \cf11 1\cf6 , \cf11 255\cf6 , THRESH_BINARY);\cb1 \
+\
+\cf8 \cb3     //Blue\cf6 \cb1 \
+\cb3     Mat \cf10 blueMask\cf6 ;\cb1 \
+\cb3     \cf9 inRange\cf6 (\cf10 hsvImage\cf6 , \cf9 Scalar\cf6 (\cf11 97\cf6 , \cf11 40\cf6 , \cf11 23\cf6 ), \cf9 Scalar\cf6 (\cf11 120\cf6 , \cf11 255\cf6 , \cf11 250\cf6 ), \cf10 blueMask\cf6 );\cb1 \
+\cb3     \cf4 int\cf6  \cf10 c3\cf6  = \cf9 countNonZero\cf6 (\cf10 blueMask\cf6 );\cb1 \
+\cb3     \cf9 threshold\cf6 (\cf10 blueMask\cf6 , \cf10 blueMask\cf6 , \cf11 1\cf6 , \cf11 255\cf6 , THRESH_BINARY);\cb1 \
+\
+\cf8 \cb3     //Yellow\cf6 \cb1 \
+\cb3     Mat \cf10 yellowMask\cf6 ;\cb1 \
+\cb3     \cf9 inRange\cf6 (\cf10 hsvImage\cf6 , \cf9 Scalar\cf6 (\cf11 20\cf6 , \cf11 100\cf6 , \cf11 50\cf6 ), \cf9 Scalar\cf6 (\cf11 40\cf6 , \cf11 255\cf6 , \cf11 255\cf6 ), \cf10 yellowMask\cf6 );\cb1 \
+\cb3     \cf4 int\cf6  \cf10 c4\cf6  = \cf9 countNonZero\cf6 (\cf10 yellowMask\cf6 );\cb1 \
+\cb3     \cf9 threshold\cf6 (\cf10 yellowMask\cf6 , \cf10 yellowMask\cf6 , \cf11 1\cf6 , \cf11 255\cf6 , THRESH_BINARY);\cb1 \
+\
+\cf8 \cb3     //Black\cf6 \cb1 \
+\cb3     Mat \cf10 blackMask\cf6 ;\cb1 \
+\cb3     \cf9 inRange\cf6 (\cf10 hsvImage\cf6 , \cf9 Scalar\cf6 (\cf11 0\cf6 , \cf11 0\cf6 , \cf11 0\cf6 ), \cf9 Scalar\cf6 (\cf11 360\cf6 , \cf11 150\cf6 , \cf11 100\cf6 ), \cf10 blackMask\cf6 );\cb1 \
+\cb3     \cf4 int\cf6  \cf10 c5\cf6  = \cf9 countNonZero\cf6 (\cf10 blackMask\cf6 );\cb1 \
+\cb3     \cf9 threshold\cf6 (\cf10 blackMask\cf6 , \cf10 blackMask\cf6 , \cf11 1\cf6 , \cf11 255\cf6 , THRESH_BINARY);\cb1 \
+\
+\cf8 \cb3     //Pink\cf6 \cb1 \
+\cb3     Mat \cf10 pinkMask\cf6 ;\cb1 \
+\cb3     \cf9 inRange\cf6 (\cf10 hsvImage\cf6 , \cf9 Scalar\cf6 (\cf11 128\cf6 , \cf11 0\cf6 , \cf11 128\cf6 ), \cf9 Scalar\cf6 (\cf11 218\cf6 , \cf11 112\cf6 ,\cf11 214\cf6 ), \cf10 pinkMask\cf6 );\cb1 \
+\cb3     \cf4 int\cf6  \cf10 c6\cf6  = \cf9 countNonZero\cf6 (\cf10 pinkMask\cf6 );\cb1 \
+\cb3     \cf9 threshold\cf6 (\cf10 pinkMask\cf6 , \cf10 pinkMask\cf6 , \cf11 1\cf6 , \cf11 255\cf6 , THRESH_BINARY);\cb1 \
+\
+\cf8 \cb3 // Display the counts\cf6 \cb1 \
+\cf9 \cb3 printf\cf6 (\cf5 "Red: \cf10 %d\cf12 \\n\cf5 Green: \cf10 %d\cf12 \\n\cf5 Blue: \cf10 %d\cf12 \\n\cf5 Yellow: \cf10 %d\cf12 \\n\cf5 Black: \cf10 %d\cf12 \\n\cf5 Pink: \cf10 %d\cf12 \\n\cf5 "\cf6 , \cf10 c1\cf6 , \cf10 c2\cf6 , \cf10 c3\cf6 , \cf10 c4\cf6 , \cf10 c5\cf6 , \cf10 c6\cf6 );\cb1 \
+\
+\cf8 \cb3 // Find the color with the maximum count\cf6 \cb1 \
+\cf4 \cb3 int\cf6  \cf10 maxCount\cf6  = \cf7 std\cf6 ::\cf9 max\cf6 (\{\cf10 c1\cf6 , \cf10 c2\cf6 , \cf10 c3\cf6 , \cf10 c4\cf6 , \cf10 c5\cf6 \});\cb1 \
+\
+\cf8 \cb3 // Combine the masks of the most dominant color\cf6 \cb1 \
+\cb3 Mat \cf10 dominantMask\cf6 ;\cb1 \
+\cf2 \cb3 if\cf6  (\cf10 maxCount\cf6  == \cf10 c1\cf6 ) \{\cb1 \
+\cb3     \cf10 dominantMask\cf6  = \cf10 redMask\cf6 ;\cb1 \
+\cb3 \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 maxCount\cf6  == \cf10 c2\cf6 ) \{\cb1 \
+\cb3     \cf10 dominantMask\cf6  = \cf10 greenMask\cf6 ;\cb1 \
+\cb3 \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 maxCount\cf6  == \cf10 c3\cf6 ) \{\cb1 \
+\cb3     \cf10 dominantMask\cf6  = \cf10 blueMask\cf6 ;\cb1 \
+\cb3 \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 maxCount\cf6  == \cf10 c4\cf6 ) \{\cb1 \
+\cb3     \cf10 dominantMask\cf6  = \cf10 yellowMask\cf6 ;\cb1 \
+\cb3 \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 maxCount\cf6  == \cf10 c5\cf6 ) \{\cb1 \
+\cb3     \cf10 dominantMask\cf6  = \cf10 blackMask\cf6 ;\cb1 \
+\cb3 \}\cb1 \
+\
+\cf8 \cb3 // Write the counts onto the output image\cf6 \cb1 \
+\cf4 \cb3 int\cf6  \cf10 width\cf6  = \cf10 dominantMask\cf6 .\cf10 cols\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 height\cf6  = \cf10 dominantMask\cf6 .\cf10 rows\cf6 ;\cb1 \
+\cb3 Mat \cf10 countsImg\cf6  = \cf7 Mat\cf6 ::\cf9 zeros\cf6 (\cf10 height\cf6 , \cf10 width\cf6 , CV_8UC1);\cb1 \
+\cf10 \cb3 countsImg\cf6 .\cf9 setTo\cf6 (\cf11 255\cf6 , \cf10 dominantMask\cf6 );\cb1 \
+\
+\cf8 \cb3 //create boxes act as sensors\cf6 \cb1 \
+\cf4 \cb3 int\cf6  \cf10 col_width\cf6  = \cf10 countsImg\cf6 .\cf10 cols\cf6  / \cf11 6\cf6 ;\cf8  // divide into 6 sections\cf6 \cb1 \
+\cf4 \cb3 int\cf6  \cf10 line1_x\cf6  = \cf10 col_width\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 line2_x\cf6  = \cf10 col_width\cf6  * \cf11 2\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 line3_x\cf6  = \cf10 col_width\cf6  * \cf11 3\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 line4_x\cf6  = \cf10 col_width\cf6  * \cf11 4\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 line5_x\cf6  = \cf10 col_width\cf6  * \cf11 5\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 line_y1\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 line_y2\cf6  = \cf10 countsImg\cf6 .\cf10 rows\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 thickness\cf6  = \cf11 1\cf6 ;\cb1 \
+\cf9 \cb3 line\cf6 (\cf10 countsImg\cf6 , \cf9 Point\cf6 (\cf10 line1_x\cf6 , \cf10 line_y1\cf6 ), \cf9 Point\cf6 (\cf10 line1_x\cf6 , \cf10 line_y2\cf6 ), \cf9 Scalar\cf6 (\cf11 255\cf6 ), \cf10 thickness\cf6 );\cb1 \
+\cf9 \cb3 line\cf6 (\cf10 countsImg\cf6 , \cf9 Point\cf6 (\cf10 line2_x\cf6 , \cf10 line_y1\cf6 ), \cf9 Point\cf6 (\cf10 line2_x\cf6 , \cf10 line_y2\cf6 ), \cf9 Scalar\cf6 (\cf11 255\cf6 ), \cf10 thickness\cf6 );\cb1 \
+\cf9 \cb3 line\cf6 (\cf10 countsImg\cf6 , \cf9 Point\cf6 (\cf10 line3_x\cf6 , \cf10 line_y1\cf6 ), \cf9 Point\cf6 (\cf10 line3_x\cf6 , \cf10 line_y2\cf6 ), \cf9 Scalar\cf6 (\cf11 255\cf6 ), \cf10 thickness\cf6 );\cb1 \
+\cf9 \cb3 line\cf6 (\cf10 countsImg\cf6 , \cf9 Point\cf6 (\cf10 line4_x\cf6 , \cf10 line_y1\cf6 ), \cf9 Point\cf6 (\cf10 line4_x\cf6 , \cf10 line_y2\cf6 ), \cf9 Scalar\cf6 (\cf11 255\cf6 ), \cf10 thickness\cf6 );\cb1 \
+\cf9 \cb3 line\cf6 (\cf10 countsImg\cf6 , \cf9 Point\cf6 (\cf10 line5_x\cf6 , \cf10 line_y1\cf6 ), \cf9 Point\cf6 (\cf10 line5_x\cf6 , \cf10 line_y2\cf6 ), \cf9 Scalar\cf6 (\cf11 255\cf6 ), \cf10 thickness\cf6 );\cb1 \
+\
+\cf8 \cb3 // count white pixels in each box\cf6 \cb1 \
+\cf4 \cb3 int\cf6  \cf10 box1\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 box2\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 box3\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 box4\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 box5\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 box6\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf2 \cb3 for\cf6  (\cf4 int\cf6  \cf10 y\cf6  = \cf11 0\cf6 ; \cf10 y\cf6  < \cf10 countsImg\cf6 .\cf10 rows\cf6 ; \cf10 y\cf6 ++) \{\cb1 \
+\cb3     \cf2 for\cf6  (\cf4 int\cf6  \cf10 x\cf6  = \cf11 0\cf6 ; \cf10 x\cf6  < \cf10 countsImg\cf6 .\cf10 cols\cf6 ; \cf10 x\cf6 ++) \{\cb1 \
+\cb3         \cf2 if\cf6  (\cf10 countsImg\cf6 .\cf10 at\cf6 <uchar>(\cf10 y\cf6 , \cf10 x\cf6 ) == \cf11 255\cf6 ) \{\cb1 \
+\cb3             \cf2 if\cf6  (\cf10 x\cf6  <= \cf10 line1_x\cf6  - \cf10 thickness\cf6 ) \{\cb1 \
+\cb3                 \cf10 box1\cf6 ++;\cb1 \
+\cb3             \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 x\cf6  > \cf10 line1_x\cf6  && \cf10 x\cf6  <= \cf10 line2_x\cf6  - \cf10 thickness\cf6 ) \{\cb1 \
+\cb3                 \cf10 box2\cf6 ++;\cb1 \
+\cb3             \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 x\cf6  > \cf10 line2_x\cf6  && \cf10 x\cf6  <= \cf10 line3_x\cf6  - \cf10 thickness\cf6 ) \{\cb1 \
+\cb3                 \cf10 box3\cf6 ++;\cb1 \
+\cb3             \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 x\cf6  > \cf10 line3_x\cf6  && \cf10 x\cf6  <= \cf10 line4_x\cf6  - \cf10 thickness\cf6 ) \{\cb1 \
+\cb3                 \cf10 box4\cf6 ++;\cb1 \
+\cb3             \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 x\cf6  > \cf10 line4_x\cf6  && \cf10 x\cf6  <= \cf10 line5_x\cf6  - \cf10 thickness\cf6 ) \{\cb1 \
+\cb3                 \cf10 box5\cf6 ++;\cb1 \
+\cb3             \} \cf2 else\cf6  \cf2 if\cf6  (\cf10 x\cf6  > \cf10 line5_x\cf6  && \cf10 x\cf6  <= \cf10 countsImg\cf6 .\cf10 cols\cf6  - \cf10 thickness\cf6 ) \{\cb1 \
+\cb3                 \cf10 box6\cf6 ++;\cb1 \
+\cb3             \}\cb1 \
+\cb3         \}\cb1 \
+\cb3     \}\cb1 \
+\cb3 \}\cb1 \
+\
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in height: "\cf6  << \cf10 countsImg\cf6 .\cf10 cols\cf6  << \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in row: "\cf6  <<\cf10 countsImg\cf6 .\cf10 rows\cf6  << \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in box1 : "\cf6  \cf9 <<\cf6  \cf10 box1\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in box2: "\cf6  \cf9 <<\cf6  \cf10 box2\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in box3: "\cf6  \cf9 <<\cf6  \cf10 box3\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in box4: "\cf6  \cf9 <<\cf6  \cf10 box4\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in box5: "\cf6  \cf9 <<\cf6  \cf10 box5\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\cf10 \cb3 cout\cf6  \cf9 <<\cf6  \cf5 "Number of white pixels in box6: "\cf6  \cf9 <<\cf6  \cf10 box6\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\
+\
+\cf9 \cb3 imshow\cf6 (\cf5 "Counts"\cf6 , \cf10 countsImg\cf6 );\cb1 \
+\cf8 \cb3 //l1||r1 +l2|| r2+l3||r3\cf6 \cb1 \
+\cf8 \cb3 //max pixel count is 1664\cf6 \cb1 \
+\
+\cf8 \cb3 //PID solution to find error value\cf6 \cb1 \
+\cf4 \cb3 int\cf6  \cf10 fd\cf6  = \cf9 wiringPiI2CSetup\cf6 (\cf11 0x04\cf6 );\cf8   // address of the Arduino Nano on the I2C bus\cf6 \cb1 \
+\
+\cf4 \cb3 double\cf6  \cf10 total_pixels\cf6  = \cf10 box1\cf6  + \cf10 box2\cf6  + \cf10 box3\cf6  + \cf10 box4\cf6  + \cf10 box5\cf6  + \cf10 box6\cf6 ;\cb1 \
+\cf8 \cb3 //reference point is the middle of frame with the pixel coordinate of 160\cf6 \cb1 \
+\cf4 \cb3 double\cf6  \cf10 num1\cf6  = -\cf11 133.3333\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 num2\cf6  = -\cf11 80.0000\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 num3\cf6  = -\cf11 26.6666\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 num4\cf6  = \cf11 26.6666\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 num5\cf6  = \cf11 80.0000\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 num6\cf6  = \cf11 133.3333\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 weighted_avg\cf6  = ((\cf10 box1\cf6 *\cf10 num1\cf6 )+(\cf10 box2\cf6 *\cf10 num2\cf6 )+(\cf10 box3\cf6 *\cf10 num3\cf6 )+(\cf10 box4\cf6 *\cf10 num4\cf6 )+(\cf10 box5\cf6 *\cf10 num5\cf6 )+(\cf10 box6\cf6 *\cf10 num6\cf6 ))/\cf10 total_pixels\cf6 ;\cb1 \
+\cf8 \cb3 //double weighted_avg = ((box1*-21)+(box2*-12)+(box3*-5)+(box4*5)+(box5* 12)+(box6* 21))/total_pixels;\cf6 \cb1 \
+\cb3 *\cf10 error\cf6  = (\cf10 weighted_avg\cf6 );\cb1 \
+\cf8 \cb3 //max and min is 133.3333/133\cf6 \cb1 \
+\
+\cb3 \}\cb1 \
+\
+\cf8 \cb3 //Pi2c car(0x22); // Configure the I2C interface to the Car as a global variable\cf6 \cb1 \
+\
+\cf4 \cb3 void\cf6  \cf9 setup\cf6 (\cf4 void\cf6 ) \{\cb1 \
+\cb3     \cf9 setupCamera\cf6 (\cf11 320\cf6 , \cf11 20\cf6 );\cf8   // Enable the camera for OpenCV\cf6 \cb1 \
+\cb3 \}\cb1 \
+\
+\cf4 \cb3 int\cf6  \cf9 main\cf6 (\cf4 int\cf6  \cf10 argc\cf6 , \cf4 char**\cf6  \cf10 argv\cf6 ) \{\cb1 \
+\cb3     \cf9 setup\cf6 ();\cf8     // Call a setup function to prepare IO and devices\cf6 \cb1 \
+\
+\cb3     \cf9 namedWindow\cf6 (\cf5 "Photo"\cf6 );\cf8    // Create a GUI window called photo\cf6 \cb1 \
+\
+\cb3     \cf2 while\cf6 (\cf4 true\cf6 ) \{\cf8     // Main loop to perform image processing\cf6 \cb1 \
+\cb3         Mat \cf10 frame\cf6 ;\cb1 \
+\
+\cb3         \cf2 while\cf6 (\cf10 frame\cf6 .\cf9 empty\cf6 ()) \{\cb1 \
+\cb3             \cf10 frame\cf6  = \cf9 captureFrame\cf6 ();\cf8  // Capture a frame from the camera and store in a new matrix variable\cf6 \cb1 \
+\cb3         \}\cb1 \
+\
+\cf8 \cb3         // Rotate the frame by 180 degrees\cf6 \cb1 \
+\cb3         \cf9 rotate\cf6 (\cf10 frame\cf6 , \cf10 frame\cf6 , \cf7 cv\cf6 ::ROTATE_180);\cb1 \
+\cf8 \cb3         // Apply bilateral filter to the image to reduce noise while preserving edges\cf6 \cb1 \
+\cb3         Mat \cf10 bblurred\cf6 ;\cb1 \
+\cb3         \cf7 cv\cf6 ::\cf9 bilateralFilter\cf6 (\cf10 frame\cf6 , \cf10 bblurred\cf6 , \cf11 10\cf6 , \cf11 20\cf6 , \cf11 10\cf6 );\cb1 \
+\cf8 \cb3         // Convert the image from BGR to HSV format\cf6 \cb1 \
+\cb3         Mat \cf10 hsvImage\cf6 ;\cb1 \
+\cb3         \cf9 cvtColor\cf6 (\cf10 bblurred\cf6 , \cf10 hsvImage\cf6 , COLOR_BGR2HSV);\cb1 \
+\cb3         Mat \cf10 output\cf6 ;\cb1 \
+\cb3         \cf4 int\cf6  \cf10 error\cf6 ;\cb1 \
+\cb3         \cf9 Linefinding\cf6 (\cf10 hsvImage\cf6 ,\cf10 output\cf6 , &\cf10 error\cf6 );\cb1 \
+\cb3         \cf10 cout\cf6  \cf9 <<\cf6  \cf5 "Error: "\cf6  \cf9 <<\cf6  \cf10 error\cf6  \cf9 <<\cf6  \cf9 endl\cf6 ;\cb1 \
+\
+\cb3         Pi2c \cf10 arduino\cf6 (\cf11 4\cf6 );\cf8  //Create a new object "arduino" using address "0x04"\cf6 \cb1 \
+\cb3         \cf10 arduino\cf6 .\cf9 i2cWriteArduinoInt\cf6 (\cf10 error\cf6 );\cf8  //send error value to Arudino Nano\cf6 \cb1 \
+\
+\cb3         \cf7 cv\cf6 ::\cf9 imshow\cf6 (\cf5 "Photo"\cf6 , \cf10 frame\cf6 );\cf8  // Display the image in the window\cf6 \cb1 \
+\
+\cb3         \cf4 int\cf6  \cf10 key\cf6  = \cf7 cv\cf6 ::\cf9 waitKey\cf6 (\cf11 1\cf6 );\cf8  // Wait 1ms for a keypress (required to update windows)\cf6 \cb1 \
+\
+\cb3         \cf2 if\cf6  (\cf10 key\cf6  == \cf11 27\cf6 ) \{\cf8  // Check if the ESC key has been pressed\cf6 \cb1 \
+\cb3             \cf2 break\cf6 ;\cb1 \
+\cb3         \}\cb1 \
+\cb3     \}\cb1 \
+\
+\cb3     \cf9 closeCV\cf6 ();\cf8  // Disable the camera and close any windows\cf6 \cb1 \
+\cb3     \cf2 return\cf6  \cf11 0\cf6 ;\cb1 \
+\cb3 \}\
+\
+//nano code\
+\cf2 #include\cf4  \cf5 <Wire.h>\cf6 \cb1 \
+\cf2 \cb3 #define\cf4  I2C_SLAVE_ADDR \cf11 0x04\cf8  // 4 in hexadecimal\cf6 \cb1 \
+\cf2 \cb3 #include\cf4  \cf5 <Servo.h>\cf4     \cf8 //include the servo library\cf6 \cb1 \
+\cf2 \cb3 #define\cf4  servoPin \cf11 4\cf6 \cb1 \
+\cb3 Servo \cf10 myservo\cf6 ;\cf8         // create servo object to control a servo\cf6 \cb1 \
+\cf4 \cb3 float\cf6  \cf10 steeringAngle\cf6 ;\cf8   // variable to store the servo position\cf6 \cb1 \
+\
+\cf2 \cb3 #define\cf4  enA \cf11 5\cf8    //EnableA command line - should be a PWM pin\cf6 \cb1 \
+\cf2 \cb3 #define\cf4  enB \cf11 6\cf8    //EnableB command line - should be a PWM pin\cf6 \cb1 \
+\
+\cf8 \cb3 //name the motor control pins - replace the CHANGEME with your pin number, digital pins do not need the 'D' prefix whereas analogue pins need the 'A' prefix\cf6 \cb1 \
+\cf2 \cb3 #define\cf4  INa A0\cf8   //Channel A direction \cf6 \cb1 \
+\cf2 \cb3 #define\cf4  INb A1\cf8   //Channel A direction \cf6 \cb1 \
+\cf2 \cb3 #define\cf4  INc A2\cf8   //Channel B direction \cf6 \cb1 \
+\cf2 \cb3 #define\cf4  INd A3\cf8   //Channel B direction \cf6 \cb1 \
+\
+\cf7 \cb3 byte\cf6  \cf10 speedSetting\cf6  = \cf11 0\cf6 ;\cf8   //initial speed = 0\cf6 \cb1 \
+\
+\cf4 \cb3 int\cf6  \cf10 leftMotor_speed\cf6  = \cf11 255\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 rightMotor_speed\cf6  = \cf11 255\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 baseSpeed\cf6  = \cf11 255\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 servoAngle\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 centreAngle\cf6  = \cf11 85\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 Kp\cf6  = \cf11 0.5\cf6  ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 Kd\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 Ki\cf6  = \cf11 0\cf6  ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 K\cf6  = \cf11 0.5\cf6 ;\cb1 \
+\cf4 \cb3 int\cf6  \cf10 error\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 cumulative_error\cf6  = \cf11 0\cf6 ;\cb1 \
+\cf4 \cb3 double\cf6  \cf10 prev_error\cf6  = \cf11 0\cf6 ;\cb1 \
+\
+\cf4 \cb3 void\cf6  \cf9 setup\cf6 () \{\cb1 \
+\cf8 \cb3   //initialise serial communication\cf6 \cb1 \
+\cb3   \cf10 Serial\cf6 .\cf9 println\cf6 (\cf5 "Arduino Nano is Running"\cf6 );\cf8  //sanity check\cf6 \cb1 \
+\cb3   \cf10 Serial\cf6 .\cf9 begin\cf6 (\cf11 9600\cf6 );\cf8 // open the serial port at 9600 bps:\cf6 \cb1 \
+\cb3   \cf10 Wire\cf6 .\cf9 begin\cf6 (\cf11 0x04\cf6 );\cf8  //Set Arduino up as an I2C slave at address 0x07\cf6 \cb1 \
+\cb3   \cb1 \
+\cb3   \cf10 myservo\cf6 .\cf9 attach\cf6 (\cf4 servoPin\cf6 );\cf8   //attach our servo object to pin D4\cf6 \cb1 \
+\cf8 \cb3   //the Servo library takes care of defining the PinMode declaration (libraries/Servo/src/avr/Servo.cpp line 240)\cf6 \cb1 \
+\
+\cf8 \cb3   //configure the motor control pins as outputs\cf6 \cb1 \
+\cb3   \cf9 pinMode\cf6 (\cf4 INa\cf6 , OUTPUT);\cb1 \
+\cb3   \cf9 pinMode\cf6 (\cf4 INb\cf6 , OUTPUT);\cb1 \
+\cb3   \cf9 pinMode\cf6 (\cf4 INc\cf6 , OUTPUT);\cb1 \
+\cb3   \cf9 pinMode\cf6 (\cf4 INd\cf6 , OUTPUT);\cb1 \
+\cb3   \cf9 pinMode\cf6 (\cf4 enA\cf6 , OUTPUT);\cb1 \
+\cb3   \cf9 pinMode\cf6 (\cf4 enB\cf6 , OUTPUT);   \cb1 \
+\
+\cf8 \cb3   //initialise serial communication\cf6 \cb1 \
+\cb3   \cf10 Serial\cf6 .\cf9 begin\cf6 (\cf11 9600\cf6 );\cb1 \
+\cb3   \cf10 Serial\cf6 .\cf9 println\cf6 (\cf5 "Arduino Nano is Running"\cf6 );\cf8  //sanity check\cf6 \cb1 \
+\
+\cb3   \cf10 speedSetting\cf6  = \cf11 255\cf6 ;\cb1 \
+\cb3   \cf9 motors\cf6 (\cf10 speedSetting\cf6 , \cf10 speedSetting\cf6 );\cf8  //make a call to the "motors" function and provide it with a value for each of the 2 motors - can be different for each motor - using same value here for expedience\cf6 \cb1 \
+\cb3   \cf10 Serial\cf6 .\cf9 print\cf6 (\cf5 "Motor Speeds: "\cf6 );\cb1 \
+\cb3   \cf10 Serial\cf6 .\cf9 println\cf6 (\cf10 speedSetting\cf6 ); \cb1 \
+\cf8 \cb3   //to ensure the servo angle left is correct\cf6 \cb1 \
+\cb3   \cf10 myservo\cf6 .\cf9 write\cf6 (\cf11 0\cf6 );\cb1 \
+\cb3   \cf9 delay\cf6 (\cf11 1000\cf6 );\cb1 \
+\cb3   \cf10 myservo\cf6 .\cf9 write\cf6 (\cf11 80\cf6 );\cb1 \
+\cb3   \cf9 delay\cf6 (\cf11 1000\cf6 );\cb1 \
+\cb3   \cf10 myservo\cf6 .\cf9 write\cf6 (\cf11 180\cf6 );\cb1 \
+\cb3   \cf9 delay\cf6 (\cf11 1000\cf6 );\cb1 \
+\cb3   \cf10 myservo\cf6 .\cf9 write\cf6 (\cf11 80\cf6 );\cb1 \
+\
+\cf8 \cb3   //Wire.onRequest(requestEvent); //Prepare to send data\cf6 \cb1 \
+\cb3   \cf10 Wire\cf6 .\cf9 onReceive\cf6 (receiveEvent);\cf8  //Prepare to recieve data\cf6 \cb1 \
+\cb3   \cb1 \
+\cb3 \}\cb1 \
+\cf4 \cb3 void\cf6  \cf9 loop\cf6 () \{\cb1 \
+\
+\cb3   \cf9 goForwards\cf6 ();\cb1 \
+\cb3   \cf4 int\cf6  \cf10 error\cf6  = \cf11 0\cf6 ;\cb1 \
+\cb3   \cf9 receiveEvent\cf6 (\cf11 8\cf6 , &\cf10 error\cf6 );\cb1 \
+\cb3   \cf4 double\cf6  \cf10 PID\cf6  = (\cf10 Kp\cf6 *\cf10 error\cf6 )+(\cf10 Ki\cf6 *\cf10 cumulative_error\cf6 )+(\cf10 Kd\cf6 *(\cf10 error\cf6 -\cf10 prev_error\cf6 ));\cb1 \
+\cb3   \cf10 cumulative_error\cf6  += \cf10 error\cf6 ;\cb1 \
+\cb3   \cf10 prev_error\cf6  = \cf10 error\cf6 ;\cb1 \
+\cb3   \cf10 servoAngle\cf6  = \cf11 85\cf6  + \cf10 PID\cf6 ;\cb1 \
+\cb3   \cf10 leftMotor_speed\cf6  = \cf10 baseSpeed\cf6  + \cf10 K\cf6 *\cf10 PID\cf6 ;\cb1 \
+\cb3   \cf10 rightMotor_speed\cf6  = \cf10 baseSpeed\cf6  - \cf10 K\cf6 *\cf10 PID\cf6 ;\cb1 \
+\cb3 \}\cb1 \
+\
+\cf4 \cb3 void\cf6  \cf9 receiveEvent\cf6 (\cf4 int\cf6  \cf10 numBytes\cf6 , \cf4 int*\cf6  \cf10 error\cf6 )\{\cb1 \
+\cf8 \cb3   //Set Up Vars\cf6 \cb1 \
+\cb3   \cf4 int\cf6  \cf10 count\cf6 =\cf11 0\cf6 ;\cb1 \
+\
+\cf8 \cb3   //We'll receive one byte at a time. Stop when none left\cf6 \cb1 \
+\cb3   \cf2 while\cf6 (\cf10 Wire\cf6 .\cf9 available\cf6 ())\cb1 \
+\cb3   \{\cb1 \
+\cb3     \cf4 char\cf6  \cf10 c\cf6  = \cf10 Wire\cf6 .\cf9 read\cf6 ();\cf8     // receive a byte as character\cf6 \cb1 \
+\cb3     \cb1 \
+\cf8 \cb3     //Create Int from the Byte Array\cf6 \cb1 \
+\cb3     \cf2 if\cf6  (\cf10 numBytes\cf6  == \cf11 1\cf6 ) \{\cb1 \
+\cf8 \cb3       // If only one byte was received, assume it is signed\cf6 \cb1 \
+\cb3       \cf7 int8_t\cf6  \cf10 b\cf6  = \cf10 c\cf6 ;\cb1 \
+\cb3       *\cf10 error\cf6  = \cf10 b\cf6 ;\cb1 \
+\cb3     \} \cf2 else\cf6  \{\cb1 \
+\cf8 \cb3       // If more than one byte was received, use an unsigned data type to store the value\cf6 \cb1 \
+\cb3       \cf7 uint8_t\cf6  \cf10 b\cf6  = \cf10 c\cf6 ;\cb1 \
+\cb3       *\cf10 error\cf6  = \cf10 b\cf6  << (\cf11 8\cf6  * \cf10 count\cf6 ) | *\cf10 error\cf6 ;\cb1 \
+\cb3     \}\cb1 \
+\cb3     \cb1 \
+\cb3     \cf10 count\cf6 ++;\cb1 \
+\cb3   \}\cb1 \
+\
+\cf8 \cb3   //Print the Int out.\cf6 \cb1 \
+\cb3   \cf10 Serial\cf6 .\cf9 print\cf6 (\cf5 "Received Number: "\cf6 ); \cb1 \
+\cb3   \cf10 Serial\cf6 .\cf9 println\cf6 (*\cf10 error\cf6 );\cb1 \
+\cb3 \}\cb1 \
+\
+\cf8 \cb3 /*\cf6 \cb1 \
+\cf8 \cb3 void loop() \{\cf6 \cb1 \
+\
+\cf8 \cb3   goForwards();\cf6 \cb1 \
+\cf8 \cb3   receiveEvent(16, &error);\cf6 \cb1 \
+\cf8 \cb3   double PID = (Kp*error)+(Ki*cumulative_error)+(Kd*(error-prev_error));\cf6 \cb1 \
+\cf8 \cb3   cumulative_error=cumulative_error+error;\cf6 \cb1 \
+\cf8 \cb3   prev_error = error;\cf6 \cb1 \
+\cf8 \cb3   servoAngle = 85 + PID;\cf6 \cb1 \
+\cf8 \cb3   leftMotor_speed = baseSpeed + K*PID;\cf6 \cb1 \
+\cf8 \cb3   rightMotor_speed = baseSpeed - K*PID;\cf6 \cb1 \
+\cf8 \cb3 \}\cf6 \cb1 \
+\
+\cf8 \cb3 void receiveEvent(int numBytes)\{\cf6 \cb1 \
+\cf8 \cb3   //void receiveEvent(int numBytes, int* error)\{\cf6 \cb1 \
+\cf8 \cb3   //Set Up Vars\cf6 \cb1 \
+\cf8 \cb3   int receive_int=0;\cf6 \cb1 \
+\cf8 \cb3   int count=0;\cf6 \cb1 \
+\
+\cf8 \cb3   //We'll recieve one byte at a time. Stop when none left\cf6 \cb1 \
+\cf8 \cb3   while(Wire.available())\cf6 \cb1 \
+\cf8 \cb3   \{\cf6 \cb1 \
+\cf8 \cb3     char c = Wire.read();    // receive a byte as character\cf6 \cb1 \
+\cf8 \cb3     \cf6 \cb1 \
+\cf8 \cb3     //Create Int from the Byte Array\cf6 \cb1 \
+\cf8 \cb3     if (numBytes == 1) \{\cf6 \cb1 \
+\cf8 \cb3       // If only one byte was received, assume it is signed\cf6 \cb1 \
+\cf8 \cb3       int8_t b = c;\cf6 \cb1 \
+\cf8 \cb3       receive_int = b << (8 * count) | receive_int;\cf6 \cb1 \
+\cf8 \cb3     \} else \{\cf6 \cb1 \
+\cf8 \cb3       // If more than one byte was received, use an unsigned data type to store the value\cf6 \cb1 \
+\cf8 \cb3       uint8_t b = c;\cf6 \cb1 \
+\cf8 \cb3       receive_int = b << (8 * count) | receive_int;\cf6 \cb1 \
+\cf8 \cb3     \}\cf6 \cb1 \
+\cf8 \cb3     \cf6 \cb1 \
+\cf8 \cb3     count++;\cf6 \cb1 \
+\cf8 \cb3   \}\cf6 \cb1 \
+\cf8 \cb3   //*error = receive_int;\cf6 \cb1 \
+\cf8 \cb3   //Print the Int out.\cf6 \cb1 \
+\cf8 \cb3   Serial.print("Received Number: "); \cf6 \cb1 \
+\cf8 \cb3   Serial.println(receive_int);\cf6 \cb1 \
+\
+\cf8 \cb3 \}\cf6 \cb1 \
+\cf8 \cb3 */\cf6 \cb1 \
+\cf4 \cb3 void\cf6  \cf9 motors\cf6 (\cf4 int\cf6  \cf10 leftSpeed\cf6 , \cf4 int\cf6  \cf10 rightSpeed\cf6 ) \{\cb1 \
+\cf8 \cb3   //set individual motor speed\cf6 \cb1 \
+\cf8 \cb3   //direction is set separately\cf6 \cb1 \
+\
+\cb3   \cf9 analogWrite\cf6 (\cf4 enA\cf6 , \cf10 leftSpeed\cf6 );\cb1 \
+\cb3   \cf9 analogWrite\cf6 (\cf4 enB\cf6 , \cf10 rightSpeed\cf6 );\cb1 \
+\cb3 \}\cb1 \
+\
+\cf4 \cb3 void\cf6  \cf9 moveSteering\cf6 () \{\cb1 \
+\cf8 \cb3   //you may need to change the maximum and minimum servo angle to have the largest steering motion\cf6 \cb1 \
+\cb3   \cf4 int\cf6  \cf10 maxAngle\cf6  = \cf11 180\cf6 ;\cb1 \
+\cb3   \cf4 int\cf6  \cf10 minAngle\cf6  = \cf11 0\cf6 ;\cb1 \
+\cb3   \cf10 myservo\cf6 .\cf9 write\cf6 (\cf11 0\cf6 );\cb1 \
+\cb3   \cf2 for\cf6  (\cf10 steeringAngle\cf6  = \cf10 minAngle\cf6 ; \cf10 steeringAngle\cf6  <= \cf10 maxAngle\cf6 ; \cf10 steeringAngle\cf6  += \cf11 1\cf6 ) \{\cf8  //goes from minAngle to maxAngle (degrees)\cf6 \cb1 \
+\cf8 \cb3     //in steps of 1 degree\cf6 \cb1 \
+\cb3     \cf10 myservo\cf6 .\cf9 write\cf6 (\cf10 steeringAngle\cf6 );\cf8    //tell servo to go to position in variable 'steeringAngle'\cf6 \cb1 \
+\cb3     \cf9 delay\cf6 (\cf11 15\cf6 );\cf8                       //waits 15ms for the servo to reach the position\cf6 \cb1 \
+\cb3   \}\cb1 \
+\cb3   \cf2 for\cf6  (\cf10 steeringAngle\cf6  = \cf10 maxAngle\cf6 ; \cf10 steeringAngle\cf6  >= \cf10 minAngle\cf6 ; \cf10 steeringAngle\cf6  -= \cf11 1\cf6 ) \{\cf8  // goes from maxAngle to minAngle (degrees)\cf6 \cb1 \
+\cb3     \cf10 myservo\cf6 .\cf9 write\cf6 (\cf10 steeringAngle\cf6 );\cf8    //tell servo to go to position in variable 'steeringAngle'\cf6 \cb1 \
+\cb3     \cf9 delay\cf6 (\cf11 15\cf6 );\cf8                       //waits 15 ms for the servo to reach the position\cf6 \cb1 \
+\cb3   \}\cb1 \
+\cb3 \}\cb1 \
+\
+\
+\cf8 \cb3 //for each of the below function, two of the 'IN' variables must be HIGH, and two LOW in order to move the wheels - use a trial and error approach to determine the correct combination for your EEEBot\cf6 \cb1 \
+\cf4 \cb3 void\cf6  \cf9 goForwards\cf6 () \{\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INa\cf6 , HIGH);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INb\cf6 , LOW);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INc\cf6 , HIGH);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INd\cf6 , LOW);\cb1 \
+\cb3 \}\cb1 \
+\
+\cf4 \cb3 void\cf6  \cf9 goBackwards\cf6 () \{\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INa\cf6 , LOW);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INb\cf6 , HIGH);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INc\cf6 , LOW);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INd\cf6 , HIGH);\cb1 \
+\cb3 \}\cb1 \
+\
+\cf4 \cb3 void\cf6  \cf9 goClockwise\cf6 () \{\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INa\cf6 , HIGH);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INb\cf6 , LOW);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INc\cf6 , LOW);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INd\cf6 , HIGH);\cb1 \
+\cb3 \}\cb1 \
+\
+\cf4 \cb3 void\cf6  \cf9 goAntiClockwise\cf6 () \{\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INa\cf6 , LOW);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INb\cf6 , HIGH);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INc\cf6 , HIGH);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INd\cf6 , LOW);\cb1 \
+\cb3 \}\cb1 \
+\
+\cf4 \cb3 void\cf6  \cf9 stopMotors\cf6 () \{\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INa\cf6 , LOW);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INb\cf6 , LOW);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INc\cf6 , LOW);\cb1 \
+\cb3   \cf9 digitalWrite\cf6 (\cf4 INd\cf6 , LOW);\cb1 \
+\cb3 \}\
+\
+\
+\
+\
+\
+//Full code raspberry pi\
+\pard\pardeftab720\partightenfactor0
+\cf13 \cb14 \outl0\strokewidth0 \strokec13 //full code draft 2\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 <stdio.h>\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "opencv2/opencv.hpp"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "opencv_aee.hpp"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "main.hpp"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "pi2c.h"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "opencv2/imgproc/imgproc.hpp"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "opencv2/highgui.hpp"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 "iostream"\cf15 \cb1 \strokec15 \
+\cf16 \cb14 \strokec16 #include\cf17 \strokec17  \cf18 \strokec18 <wiringPiI2C.h>\cf15 \cb1 \strokec15 \
+\
+\cf16 \cb14 \strokec16 using\cf15 \strokec15  \cf17 \strokec17 namespace\cf15 \strokec15  \cf19 \strokec19 cv\cf15 \strokec15 ;\cb1 \
+\cf16 \cb14 \strokec16 using\cf15 \strokec15  \cf17 \strokec17 namespace\cf15 \strokec15  \cf19 \strokec19 std\cf15 \strokec15 ;\cb1 \
+\
+\cf13 \cb14 \strokec13 //function prototypes\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 void\cf15 \strokec15  \cf20 \strokec20 symbolfind\cf15 \strokec15 (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 pinkCount\cf15 \strokec15 , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match1\cf15 \strokec15  , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match2\cf15 \strokec15  , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match3\cf15 \strokec15  , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match4\cf15 \strokec15 , \cf19 \strokec19 cv\cf15 \strokec15 ::Mat* symbolImage);\cb1 \
+\
+\cf17 \cb14 \strokec17 void\cf15 \strokec15  \cf20 \strokec20 Linefinding\cf15 \strokec15 (Mat \cf21 \strokec21 hsvImage\cf15 \strokec15 ,Mat& \cf21 \strokec21 output\cf15 \strokec15 , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 error\cf15 \strokec15 , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 pinkCount\cf15 \strokec15 , Mat* \cf21 \strokec21 symbolImage\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13 //Pi2c car(0x22); // Configure the I2C interface to the Car as a global variable\cf15 \cb1 \strokec15 \
+\
+\cf17 \cb14 \strokec17 void\cf15 \strokec15  \cf20 \strokec20 setup\cf15 \strokec15 (\cf17 \strokec17 void\cf15 \strokec15 ) \{\cb1 \
+\cb14     \cf20 \strokec20 setupCamera\cf15 \strokec15 (\cf22 \strokec22 320\cf15 \strokec15 , \cf22 \strokec22 20\cf15 \strokec15 );\cf13 \strokec13   // Enable the camera for OpenCV\cf15 \cb1 \strokec15 \
+\cb14 \}\cb1 \
+\
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf20 \strokec20 main\cf15 \strokec15 (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 argc\cf15 \strokec15 , \cf17 \strokec17 char\cf15 \strokec15 ** \cf21 \strokec21 argv\cf15 \strokec15 ) \{\cb1 \
+\cb14     \cf20 \strokec20 setup\cf15 \strokec15 ();\cf13 \strokec13     // Call a setup function to prepare IO and devices\cf15 \cb1 \strokec15 \
+\
+\cb14     \cf20 \strokec20 namedWindow\cf15 \strokec15 (\cf18 \strokec18 "Photo"\cf15 \strokec15 );\cf13 \strokec13    // Create a GUI window called photo\cf15 \cb1 \strokec15 \
+\
+\cb14     \cf16 \strokec16 while\cf15 \strokec15 (\cf17 \strokec17 true\cf15 \strokec15 ) \{\cf13 \strokec13     // Main loop to perform image processing\cf15 \cb1 \strokec15 \
+\cb14         Mat \cf21 \strokec21 frame\cf15 \strokec15 ;\cb1 \
+\
+\cb14         \cf16 \strokec16 while\cf15 \strokec15 (\cf21 \strokec21 frame\cf15 \strokec15 .\cf20 \strokec20 empty\cf15 \strokec15 ()) \{\cb1 \
+\cb14             \cf21 \strokec21 frame\cf15 \strokec15  = \cf20 \strokec20 captureFrame\cf15 \strokec15 ();\cf13 \strokec13  // Capture a frame from the camera and store in a new matrix variable\cf15 \cb1 \strokec15 \
+\cb14         \}\cb1 \
+\
+\cf13 \cb14 \strokec13         // Rotate the frame by 180 degrees\cf15 \cb1 \strokec15 \
+\cb14         \cf20 \strokec20 rotate\cf15 \strokec15 (\cf21 \strokec21 frame\cf15 \strokec15 , \cf21 \strokec21 frame\cf15 \strokec15 , \cf19 \strokec19 cv\cf15 \strokec15 ::ROTATE_180);\cb1 \
+\cf13 \cb14 \strokec13         //resize(frame, frame, Size(320, 60));\cf15 \cb1 \strokec15 \
+\
+\cf13 \cb14 \strokec13         // Apply bilateral filter to the image to reduce noise while preserving edges\cf15 \cb1 \strokec15 \
+\cb14         Mat \cf21 \strokec21 bblurred\cf15 \strokec15 ;\cb1 \
+\cb14         \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 bilateralFilter\cf15 \strokec15 (\cf21 \strokec21 frame\cf15 \strokec15 , \cf21 \strokec21 bblurred\cf15 \strokec15 , \cf22 \strokec22 10\cf15 \strokec15 , \cf22 \strokec22 20\cf15 \strokec15 , \cf22 \strokec22 10\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13         // Convert the image from BGR to HSV format\cf15 \cb1 \strokec15 \
+\cb14         Mat \cf21 \strokec21 hsvImage\cf15 \strokec15 ;\cb1 \
+\cb14         \cf21 \strokec21 cvtColor\cf15 \strokec15 (\cf21 \strokec21 bblurred\cf15 \strokec15 , \cf21 \strokec21 hsvImage\cf15 \strokec15 , COLOR_BGR2HSV);\cb1 \
+\
+\cb14         Mat \cf21 \strokec21 output\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 error\cf15 \strokec15 ;\cb1 \
+\cb14         \cf20 \strokec20 Linefinding\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 ,\cf21 \strokec21 output\cf15 \strokec15 , &\cf21 \strokec21 error\cf15 \strokec15 );\cb1 \
+\cb14         \cf21 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Error: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 error\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cb14         Mat \cf21 \strokec21 output\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 error\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 pinkCount\cf15 \strokec15 ;\cb1 \
+\cb14         Mat \cf21 \strokec21 symbolImage\cf15 \strokec15 ;\cb1 \
+\cb14         \cf20 \strokec20 Linefinding\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 ,\cf21 \strokec21 output\cf15 \strokec15 , &\cf21 \strokec21 error\cf15 \strokec15 , &\cf21 \strokec21 pinkCount\cf15 \strokec15 , &\cf21 \strokec21 symbolImage\cf15 \strokec15 );\cb1 \
+\cb14         \cf21 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Error: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 error\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cb14         \cf21 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Pink count: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 pinkCount\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 match1\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 match2\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 match3\cf15 \strokec15 ;\cb1 \
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 match4\cf15 \strokec15 ;\cb1 \
+\cb14         \cf20 \strokec20 symbolfind\cf15 \strokec15 (\cf21 \strokec21 pinkCount\cf15 \strokec15 , &\cf21 \strokec21 match1\cf15 \strokec15  , &\cf21 \strokec21 match2\cf15 \strokec15  , &\cf21 \strokec21 match3\cf15 \strokec15  , &\cf21 \strokec21 match4\cf15 \strokec15 , &\cf21 \strokec21 symbolImage\cf15 \strokec15 );\cb1 \
+\cb14         \cf20 \strokec20 Linefinding\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 ,\cf21 \strokec21 output\cf15 \strokec15 , &\cf21 \strokec21 error\cf15 \strokec15 , &\cf21 \strokec21 pinkCount\cf15 \strokec15 , &\cf21 \strokec21 symbolImage\cf15 \strokec15 );\cb1 \
+\
+\cb14     \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 match1\cf15 \strokec15  > \cf22 \strokec22 80\cf15 \strokec15 )\{\cb1 \
+\cb14             \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "Symbol match percentage: \cf21 \strokec21 %f\cf18 \strokec18 "\cf15 \strokec15  ,\cf21 \strokec21 match1\cf15 \strokec15 );\cb1 \
+\cb14         \} \cf16 \strokec16 else\cf15 \strokec15 \{\cb1 \
+\cb14         \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "No match (Cirle)"\cf15 \strokec15 );\cb1 \
+\cb14         \}\cb1 \
+\
+\cb14         \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 match2\cf15 \strokec15  > \cf22 \strokec22 80\cf15 \strokec15 )\{\cb1 \
+\cb14             \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "Symbol match percentage: \cf21 \strokec21 %f\cf18 \strokec18 "\cf15 \strokec15  ,\cf21 \strokec21 match2\cf15 \strokec15 );\cb1 \
+\cb14         \} \cf16 \strokec16 else\cf15 \strokec15 \{\cb1 \
+\cb14         \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "No match (Star)"\cf15 \strokec15 );\cb1 \
+\cb14         \}\cb1 \
+\
+\cb14         \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 match3\cf15 \strokec15  > \cf22 \strokec22 80\cf15 \strokec15 )\{\cb1 \
+\cb14             \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "Symbol match percentage: \cf21 \strokec21 %f\cf18 \strokec18 "\cf15 \strokec15  ,\cf21 \strokec21 match3\cf15 \strokec15 );\cb1 \
+\cb14         \} \cf16 \strokec16 else\cf15 \strokec15 \{\cb1 \
+\cb14         \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "No match (Triangle)"\cf15 \strokec15 );\cb1 \
+\cb14         \}\cb1 \
+\cb14         \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 match4\cf15 \strokec15  > \cf22 \strokec22 80\cf15 \strokec15 )\{\cb1 \
+\cb14             \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "Symbol match percentage: \cf21 \strokec21 %f\cf18 \strokec18 "\cf15 \strokec15  ,\cf21 \strokec21 match4\cf15 \strokec15 );\cb1 \
+\cb14         \} \cf16 \strokec16 else\cf15 \strokec15 \{\cb1 \
+\cb14         \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "No match (Umbrella)"\cf15 \strokec15 );\cb1 \
+\cb14         \}\cb1 \
+\
+\cb14         Pi2c \cf21 \strokec21 arduino\cf15 \strokec15 (\cf22 \strokec22 4\cf15 \strokec15 );\cf13 \strokec13  //Create a new object "arduino" using address "0x04"\cf15 \cb1 \strokec15 \
+\cb14         \cf21 \strokec21 arduino\cf15 \strokec15 .\cf20 \strokec20 i2cWriteArduinoInt\cf15 \strokec15 (\cf21 \strokec21 error\cf15 \strokec15 );\cf13 \strokec13  //send error value to Arudino Nano\cf15 \cb1 \strokec15 \
+\
+\cb14         \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 imshow\cf15 \strokec15 (\cf18 \strokec18 "Photo"\cf15 \strokec15 , \cf21 \strokec21 frame\cf15 \strokec15 );\cf13 \strokec13  // Display the image in the window\cf15 \cb1 \strokec15 \
+\
+\cb14         \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 key\cf15 \strokec15  = \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 waitKey\cf15 \strokec15 (\cf22 \strokec22 1\cf15 \strokec15 );\cf13 \strokec13  // Wait 1ms for a keypress (required to update windows)\cf15 \cb1 \strokec15 \
+\
+\cb14         \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 key\cf15 \strokec15  == \cf22 \strokec22 27\cf15 \strokec15 ) \{\cf13 \strokec13  // Check if the ESC key has been pressed\cf15 \cb1 \strokec15 \
+\cb14             \cf16 \strokec16 break\cf15 \strokec15 ;\cb1 \
+\cb14         \}\cb1 \
+\cb14     \}\cb1 \
+\
+\cb14     \cf20 \strokec20 closeCV\cf15 \strokec15 ();\cf13 \strokec13  // Disable the camera and close any windows\cf15 \cb1 \strokec15 \
+\cb14     \cf16 \strokec16 return\cf15 \strokec15  \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cb14 \}\cb1 \
+\
+\cf13 \cb14 \strokec13 //line finding function\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 void\cf15 \strokec15  \cf20 \strokec20 Linefinding\cf15 \strokec15 (Mat \cf21 \strokec21 hsvImage\cf15 \strokec15 ,Mat& \cf21 \strokec21 output\cf15 \strokec15 , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 error\cf15 \strokec15 , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 pinkCount\cf15 \strokec15 , Mat* \cf21 \strokec21 symbolImage\cf15 \strokec15 )\{\cb1 \
+\cf13 \cb14 \strokec13     //RED\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 redMask\cf15 \strokec15 ;\cb1 \
+\cb14     \cf20 \strokec20 inRange\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 , \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 160\cf15 \strokec15 , \cf22 \strokec22 35\cf15 \strokec15 , \cf22 \strokec22 40\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 185\cf15 \strokec15 , \cf22 \strokec22 245\cf15 \strokec15 , \cf22 \strokec22 245\cf15 \strokec15 ), \cf21 \strokec21 redMask\cf15 \strokec15 );\cb1 \
+\cb14     \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 c1\cf15 \strokec15  = \cf20 \strokec20 countNonZero\cf15 \strokec15 (\cf21 \strokec21 redMask\cf15 \strokec15 );\cb1 \
+\cf13 \cb14 \strokec13     //Green\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 greenMask\cf15 \strokec15 ;\cb1 \
+\cb14     \cf20 \strokec20 inRange\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 , \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 75\cf15 \strokec15 , \cf22 \strokec22 55\cf15 \strokec15 , \cf22 \strokec22 40\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 95\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 ), \cf21 \strokec21 greenMask\cf15 \strokec15 );\cb1 \
+\cb14     \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 c2\cf15 \strokec15  = \cf20 \strokec20 countNonZero\cf15 \strokec15 (\cf21 \strokec21 greenMask\cf15 \strokec15 );\cb1 \
+\cf13 \cb14 \strokec13     //Blue\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 blueMask\cf15 \strokec15 ;\cb1 \
+\cb14     \cf20 \strokec20 inRange\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 , \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 97\cf15 \strokec15 , \cf22 \strokec22 40\cf15 \strokec15 , \cf22 \strokec22 23\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 120\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 , \cf22 \strokec22 250\cf15 \strokec15 ), \cf21 \strokec21 blueMask\cf15 \strokec15 );\cb1 \
+\cb14     \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 c3\cf15 \strokec15  = \cf20 \strokec20 countNonZero\cf15 \strokec15 (\cf21 \strokec21 blueMask\cf15 \strokec15 );\cb1 \
+\cf13 \cb14 \strokec13     //Yellow\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 yellowMask\cf15 \strokec15 ;\cb1 \
+\cb14     \cf20 \strokec20 inRange\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 , \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 20\cf15 \strokec15 , \cf22 \strokec22 100\cf15 \strokec15 , \cf22 \strokec22 50\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 40\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 ), \cf21 \strokec21 yellowMask\cf15 \strokec15 );\cb1 \
+\cb14     \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 c4\cf15 \strokec15  = \cf20 \strokec20 countNonZero\cf15 \strokec15 (\cf21 \strokec21 yellowMask\cf15 \strokec15 );\cb1 \
+\cf13 \cb14 \strokec13     //Black\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 blackMask\cf15 \strokec15 ;\cb1 \
+\cb14     \cf20 \strokec20 inRange\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 , \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 360\cf15 \strokec15 , \cf22 \strokec22 150\cf15 \strokec15 , \cf22 \strokec22 100\cf15 \strokec15 ), \cf21 \strokec21 blackMask\cf15 \strokec15 );\cb1 \
+\cb14     \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 c5\cf15 \strokec15  = \cf20 \strokec20 countNonZero\cf15 \strokec15 (\cf21 \strokec21 blackMask\cf15 \strokec15 );\cb1 \
+\cf13 \cb14 \strokec13     //Pink\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 pinkMask\cf15 \strokec15 ;\cb1 \
+\cb14     \cf20 \strokec20 inRange\cf15 \strokec15 (\cf21 \strokec21 hsvImage\cf15 \strokec15 , \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 128\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 128\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 218\cf15 \strokec15 , \cf22 \strokec22 112\cf15 \strokec15 ,\cf22 \strokec22 214\cf15 \strokec15 ), \cf21 \strokec21 pinkMask\cf15 \strokec15 );\cb1 \
+\cb14     \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 c6\cf15 \strokec15  = \cf20 \strokec20 countNonZero\cf15 \strokec15 (\cf21 \strokec21 pinkMask\cf15 \strokec15 );\cb1 \
+\cb14     \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 c6\cf15 \strokec15  = \cf20 \strokec20 countNonZero\cf15 \strokec15 (\cf21 \strokec21 pinkMask\cf15 \strokec15 );\cb1 \
+\cb14     *\cf21 \strokec21 pinkCount\cf15 \strokec15  = \cf21 \strokec21 c6\cf15 \strokec15 ;\cb1 \
+\cb14     *\cf21 \strokec21 symbolImage\cf15 \strokec15  = \cf21 \strokec21 pinkMask\cf15 \strokec15 ;\cb1 \
+\
+\cf13 \cb14 \strokec13 // Display the counts\cf15 \cb1 \strokec15 \
+\cf20 \cb14 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "Red: \cf21 \strokec21 %d\cf23 \strokec23 \\n\cf18 \strokec18 Green: \cf21 \strokec21 %d\cf23 \strokec23 \\n\cf18 \strokec18 Blue: \cf21 \strokec21 %d\cf23 \strokec23 \\n\cf18 \strokec18 Yellow: \cf21 \strokec21 %d\cf23 \strokec23 \\n\cf18 \strokec18 Black: \cf21 \strokec21 %d\cf23 \strokec23 \\n\cf18 \strokec18 Pink: \cf21 \strokec21 %d\cf23 \strokec23 \\n\cf18 \strokec18 "\cf15 \strokec15 , \cf21 \strokec21 c1\cf15 \strokec15 , \cf21 \strokec21 c2\cf15 \strokec15 , \cf21 \strokec21 c3\cf15 \strokec15 , \cf21 \strokec21 c4\cf15 \strokec15 , \cf21 \strokec21 c5\cf15 \strokec15 , \cf21 \strokec21 c6\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13 // Find the color with the maximum count\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 maxCount\cf15 \strokec15  = \cf19 \strokec19 std\cf15 \strokec15 ::\cf20 \strokec20 max\cf15 \strokec15 (\{\cf21 \strokec21 c1\cf15 \strokec15 , \cf21 \strokec21 c2\cf15 \strokec15 , \cf21 \strokec21 c3\cf15 \strokec15 , \cf21 \strokec21 c4\cf15 \strokec15 , \cf21 \strokec21 c5\cf15 \strokec15 \});\cb1 \
+\
+\cf13 \cb14 \strokec13 // Combine the masks of the most dominant color\cf15 \cb1 \strokec15 \
+\cb14 Mat \cf21 \strokec21 dominantMask\cf15 \strokec15 ;\cb1 \
+\cf16 \cb14 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 maxCount\cf15 \strokec15  == \cf21 \strokec21 c1\cf15 \strokec15 ) \{\cb1 \
+\cb14     \cf21 \strokec21 dominantMask\cf15 \strokec15  = \cf21 \strokec21 redMask\cf15 \strokec15 ;\cb1 \
+\cb14 \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 maxCount\cf15 \strokec15  == \cf21 \strokec21 c2\cf15 \strokec15 ) \{\cb1 \
+\cb14     \cf21 \strokec21 dominantMask\cf15 \strokec15  = \cf21 \strokec21 greenMask\cf15 \strokec15 ;\cb1 \
+\cb14 \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 maxCount\cf15 \strokec15  == \cf21 \strokec21 c3\cf15 \strokec15 ) \{\cb1 \
+\cb14     \cf21 \strokec21 dominantMask\cf15 \strokec15  = \cf21 \strokec21 blueMask\cf15 \strokec15 ;\cb1 \
+\cb14 \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 maxCount\cf15 \strokec15  == \cf21 \strokec21 c4\cf15 \strokec15 ) \{\cb1 \
+\cb14     \cf21 \strokec21 dominantMask\cf15 \strokec15  = \cf21 \strokec21 yellowMask\cf15 \strokec15 ;\cb1 \
+\cb14 \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 maxCount\cf15 \strokec15  == \cf21 \strokec21 c5\cf15 \strokec15 ) \{\cb1 \
+\cb14     \cf21 \strokec21 dominantMask\cf15 \strokec15  = \cf21 \strokec21 blackMask\cf15 \strokec15 ;\cb1 \
+\cb14 \}\cb1 \
+\
+\cf13 \cb14 \strokec13 // Write the counts onto the output image\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 width\cf15 \strokec15  = \cf21 \strokec21 dominantMask\cf15 \strokec15 .\cf21 \strokec21 cols\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 height\cf15 \strokec15  = \cf21 \strokec21 dominantMask\cf15 \strokec15 .\cf21 \strokec21 rows\cf15 \strokec15 ;\cb1 \
+\cb14 Mat \cf21 \strokec21 countsImg\cf15 \strokec15  = \cf19 \strokec19 Mat\cf15 \strokec15 ::\cf20 \strokec20 zeros\cf15 \strokec15 (\cf21 \strokec21 height\cf15 \strokec15 , \cf21 \strokec21 width\cf15 \strokec15 , CV_8UC1);\cb1 \
+\cf21 \cb14 \strokec21 countsImg\cf15 \strokec15 .\cf20 \strokec20 setTo\cf15 \strokec15 (\cf22 \strokec22 255\cf15 \strokec15 , \cf21 \strokec21 dominantMask\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13 //create boxes act as sensors\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 col_width\cf15 \strokec15  = \cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 cols\cf15 \strokec15  / \cf22 \strokec22 6\cf15 \strokec15 ;\cf13 \strokec13  // divide into 6 sections\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line1_x\cf15 \strokec15  = \cf21 \strokec21 col_width\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line2_x\cf15 \strokec15  = \cf21 \strokec21 col_width\cf15 \strokec15  * \cf22 \strokec22 2\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line3_x\cf15 \strokec15  = \cf21 \strokec21 col_width\cf15 \strokec15  * \cf22 \strokec22 3\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line4_x\cf15 \strokec15  = \cf21 \strokec21 col_width\cf15 \strokec15  * \cf22 \strokec22 4\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line5_x\cf15 \strokec15  = \cf21 \strokec21 col_width\cf15 \strokec15  * \cf22 \strokec22 5\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line_y1\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 line_y2\cf15 \strokec15  = \cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 rows\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 thickness\cf15 \strokec15  = \cf22 \strokec22 1\cf15 \strokec15 ;\cb1 \
+\cf20 \cb14 \strokec20 line\cf15 \strokec15 (\cf21 \strokec21 countsImg\cf15 \strokec15 , \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line1_x\cf15 \strokec15 , \cf21 \strokec21 line_y1\cf15 \strokec15 ), \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line1_x\cf15 \strokec15 , \cf21 \strokec21 line_y2\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 255\cf15 \strokec15 ), \cf21 \strokec21 thickness\cf15 \strokec15 );\cb1 \
+\cf20 \cb14 \strokec20 line\cf15 \strokec15 (\cf21 \strokec21 countsImg\cf15 \strokec15 , \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line2_x\cf15 \strokec15 , \cf21 \strokec21 line_y1\cf15 \strokec15 ), \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line2_x\cf15 \strokec15 , \cf21 \strokec21 line_y2\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 255\cf15 \strokec15 ), \cf21 \strokec21 thickness\cf15 \strokec15 );\cb1 \
+\cf20 \cb14 \strokec20 line\cf15 \strokec15 (\cf21 \strokec21 countsImg\cf15 \strokec15 , \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line3_x\cf15 \strokec15 , \cf21 \strokec21 line_y1\cf15 \strokec15 ), \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line3_x\cf15 \strokec15 , \cf21 \strokec21 line_y2\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 255\cf15 \strokec15 ), \cf21 \strokec21 thickness\cf15 \strokec15 );\cb1 \
+\cf20 \cb14 \strokec20 line\cf15 \strokec15 (\cf21 \strokec21 countsImg\cf15 \strokec15 , \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line4_x\cf15 \strokec15 , \cf21 \strokec21 line_y1\cf15 \strokec15 ), \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line4_x\cf15 \strokec15 , \cf21 \strokec21 line_y2\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 255\cf15 \strokec15 ), \cf21 \strokec21 thickness\cf15 \strokec15 );\cb1 \
+\cf20 \cb14 \strokec20 line\cf15 \strokec15 (\cf21 \strokec21 countsImg\cf15 \strokec15 , \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line5_x\cf15 \strokec15 , \cf21 \strokec21 line_y1\cf15 \strokec15 ), \cf20 \strokec20 Point\cf15 \strokec15 (\cf21 \strokec21 line5_x\cf15 \strokec15 , \cf21 \strokec21 line_y2\cf15 \strokec15 ), \cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 255\cf15 \strokec15 ), \cf21 \strokec21 thickness\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13 // count white pixels in each box\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 box1\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 box2\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 box3\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 box4\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 box5\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 box6\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cf16 \cb14 \strokec16 for\cf15 \strokec15  (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 y\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ; \cf21 \strokec21 y\cf15 \strokec15  < \cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 rows\cf15 \strokec15 ; \cf21 \strokec21 y\cf15 \strokec15 ++) \{\cb1 \
+\cb14     \cf16 \strokec16 for\cf15 \strokec15  (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 x\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ; \cf21 \strokec21 x\cf15 \strokec15  < \cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 cols\cf15 \strokec15 ; \cf21 \strokec21 x\cf15 \strokec15 ++) \{\cb1 \
+\cb14         \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 at\cf15 \strokec15 <uchar>(\cf21 \strokec21 y\cf15 \strokec15 , \cf21 \strokec21 x\cf15 \strokec15 ) == \cf22 \strokec22 255\cf15 \strokec15 ) \{\cb1 \
+\cb14             \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 x\cf15 \strokec15  <= \cf21 \strokec21 line1_x\cf15 \strokec15  - \cf21 \strokec21 thickness\cf15 \strokec15 ) \{\cb1 \
+\cb14                 \cf21 \strokec21 box1\cf15 \strokec15 ++;\cb1 \
+\cb14             \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 x\cf15 \strokec15  > \cf21 \strokec21 line1_x\cf15 \strokec15  && \cf21 \strokec21 x\cf15 \strokec15  <= \cf21 \strokec21 line2_x\cf15 \strokec15  - \cf21 \strokec21 thickness\cf15 \strokec15 ) \{\cb1 \
+\cb14                 \cf21 \strokec21 box2\cf15 \strokec15 ++;\cb1 \
+\cb14             \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 x\cf15 \strokec15  > \cf21 \strokec21 line2_x\cf15 \strokec15  && \cf21 \strokec21 x\cf15 \strokec15  <= \cf21 \strokec21 line3_x\cf15 \strokec15  - \cf21 \strokec21 thickness\cf15 \strokec15 ) \{\cb1 \
+\cb14                 \cf21 \strokec21 box3\cf15 \strokec15 ++;\cb1 \
+\cb14             \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 x\cf15 \strokec15  > \cf21 \strokec21 line3_x\cf15 \strokec15  && \cf21 \strokec21 x\cf15 \strokec15  <= \cf21 \strokec21 line4_x\cf15 \strokec15  - \cf21 \strokec21 thickness\cf15 \strokec15 ) \{\cb1 \
+\cb14                 \cf21 \strokec21 box4\cf15 \strokec15 ++;\cb1 \
+\cb14             \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 x\cf15 \strokec15  > \cf21 \strokec21 line4_x\cf15 \strokec15  && \cf21 \strokec21 x\cf15 \strokec15  <= \cf21 \strokec21 line5_x\cf15 \strokec15  - \cf21 \strokec21 thickness\cf15 \strokec15 ) \{\cb1 \
+\cb14                 \cf21 \strokec21 box5\cf15 \strokec15 ++;\cb1 \
+\cb14             \} \cf16 \strokec16 else\cf15 \strokec15  \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 x\cf15 \strokec15  > \cf21 \strokec21 line5_x\cf15 \strokec15  && \cf21 \strokec21 x\cf15 \strokec15  <= \cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 cols\cf15 \strokec15  - \cf21 \strokec21 thickness\cf15 \strokec15 ) \{\cb1 \
+\cb14                 \cf21 \strokec21 box6\cf15 \strokec15 ++;\cb1 \
+\cb14             \}\cb1 \
+\cb14         \}\cb1 \
+\cb14     \}\cb1 \
+\cb14 \}\cb1 \
+\
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in height: "\cf15 \strokec15  << \cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 cols\cf15 \strokec15  << \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in row: "\cf15 \strokec15  <<\cf21 \strokec21 countsImg\cf15 \strokec15 .\cf21 \strokec21 rows\cf15 \strokec15  << \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in box1 : "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 box1\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in box2: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 box2\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in box3: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 box3\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in box4: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 box4\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in box5: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 box5\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\cf21 \cb14 \strokec21 cout\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf18 \strokec18 "Number of white pixels in box6: "\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf21 \strokec21 box6\cf15 \strokec15  \cf20 \strokec20 <<\cf15 \strokec15  \cf20 \strokec20 endl\cf15 \strokec15 ;\cb1 \
+\
+\
+\cf21 \cb14 \strokec21 imshow\cf15 \strokec15 (\cf18 \strokec18 "Counts"\cf15 \strokec15 , \cf21 \strokec21 countsImg\cf15 \strokec15 );\cb1 \
+\cf13 \cb14 \strokec13 //l1||r1 +l2|| r2+l3||r3\cf15 \cb1 \strokec15 \
+\cf13 \cb14 \strokec13 //max pixel count is 1664\cf15 \cb1 \strokec15 \
+\
+\cf13 \cb14 \strokec13 //PID solution to find error value\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 fd\cf15 \strokec15  = \cf20 \strokec20 wiringPiI2CSetup\cf15 \strokec15 (\cf22 \strokec22 0x04\cf15 \strokec15 );\cf13 \strokec13   // address of the Arduino Nano on the I2C bus\cf15 \cb1 \strokec15 \
+\
+\cf17 \cb14 \strokec17 double\cf15 \strokec15  \cf21 \strokec21 total_pixels\cf15 \strokec15  = \cf21 \strokec21 box1\cf15 \strokec15  + \cf21 \strokec21 box2\cf15 \strokec15  + \cf21 \strokec21 box3\cf15 \strokec15  + \cf21 \strokec21 box4\cf15 \strokec15  + \cf21 \strokec21 box5\cf15 \strokec15  + \cf21 \strokec21 box6\cf15 \strokec15 ;\cb1 \
+\cf13 \cb14 \strokec13 //reference point is the middle of frame with the pixel coordinate of 160\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 double\cf15 \strokec15  \cf21 \strokec21 num1\cf15 \strokec15  = -\cf22 \strokec22 133.3333\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 double\cf15 \strokec15  \cf21 \strokec21 num2\cf15 \strokec15  = -\cf22 \strokec22 80.0000\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 double\cf15 \strokec15  \cf21 \strokec21 num3\cf15 \strokec15  = -\cf22 \strokec22 26.6666\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 double\cf15 \strokec15  \cf21 \strokec21 num4\cf15 \strokec15  = \cf22 \strokec22 26.6666\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 double\cf15 \strokec15  \cf21 \strokec21 num5\cf15 \strokec15  = \cf22 \strokec22 80.0000\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 double\cf15 \strokec15  \cf21 \strokec21 num6\cf15 \strokec15  = \cf22 \strokec22 133.3333\cf15 \strokec15 ;\cb1 \
+\cf17 \cb14 \strokec17 double\cf15 \strokec15  \cf21 \strokec21 weighted_avg\cf15 \strokec15  = ((\cf21 \strokec21 box1\cf15 \strokec15 *\cf21 \strokec21 num1\cf15 \strokec15 )+(\cf21 \strokec21 box2\cf15 \strokec15 *\cf21 \strokec21 num2\cf15 \strokec15 )+(\cf21 \strokec21 box3\cf15 \strokec15 *\cf21 \strokec21 num3\cf15 \strokec15 )+(\cf21 \strokec21 box4\cf15 \strokec15 *\cf21 \strokec21 num4\cf15 \strokec15 )+(\cf21 \strokec21 box5\cf15 \strokec15 *\cf21 \strokec21 num5\cf15 \strokec15 )+(\cf21 \strokec21 box6\cf15 \strokec15 *\cf21 \strokec21 num6\cf15 \strokec15 ))/\cf21 \strokec21 total_pixels\cf15 \strokec15 ;\cb1 \
+\cf13 \cb14 \strokec13 //double weighted_avg = ((box1*-21)+(box2*-12)+(box3*-5)+(box4*5)+(box5* 12)+(box6* 21))/total_pixels;\cf15 \cb1 \strokec15 \
+\cb14 *\cf21 \strokec21 error\cf15 \strokec15  = (\cf21 \strokec21 weighted_avg\cf15 \strokec15 );\cb1 \
+\cf13 \cb14 \strokec13 //max and min is 133.3333/133\cf15 \cb1 \strokec15 \
+\cb14 \}\cb1 \
+\
+\cf13 \cb14 \strokec13 //symbolfinding function\cf15 \cb1 \strokec15 \
+\cf17 \cb14 \strokec17 void\cf15 \strokec15  \cf20 \strokec20 symbolfind\cf15 \strokec15 (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 pinkCount\cf15 \strokec15 , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match1\cf15 \strokec15  , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match2\cf15 \strokec15  , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match3\cf15 \strokec15  , \cf17 \strokec17 int\cf15 \strokec15 * \cf21 \strokec21 match4\cf15 \strokec15 , \cf19 \strokec19 cv\cf15 \strokec15 ::Mat* symbolImage)\{\cb1 \
+\
+\cf13 \cb14 \strokec13     //if there are pink pixels code executes\cf15 \cb1 \strokec15 \
+\cb14     \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 pinkCount\cf15 \strokec15  > \cf22 \strokec22 1000\cf15 \strokec15 )\{\cb1 \
+\
+\cb14     \cf20 \strokec20 resizeCamera\cf15 \strokec15 (\cf22 \strokec22 400\cf15 \strokec15 ,\cf22 \strokec22 400\cf15 \strokec15 );\cf13 \strokec13  // Resize the camera frame\cf15 \cb1 \strokec15 \
+\
+\cb14     \cf19 \strokec19 std\cf15 \strokec15 ::\cf19 \strokec19 vector\cf15 \strokec15 <\cf19 \strokec19 std\cf15 \strokec15 ::vector<\cf19 \strokec19 cv\cf15 \strokec15 ::Point> > \cf21 \strokec21 contours\cf15 \strokec15 ;\cb1 \
+\cb14     \cf19 \strokec19 std\cf15 \strokec15 ::vector<\cf19 \strokec19 cv\cf15 \strokec15 ::Vec4i> hierarchy;\cb1 \
+\cb14     \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 findContours\cf15 \strokec15 (symbolImage, \cf21 \strokec21 contours\cf15 \strokec15 , hierarchy, \cf19 \strokec19 cv\cf15 \strokec15 ::RETR_TREE, \cf19 \strokec19 cv\cf15 \strokec15 ::CHAIN_APPROX_SIMPLE, \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 Point\cf15 \strokec15 (\cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 ));\cf13 \strokec13  // Find contours\cf15 \cb1 \strokec15 \
+\
+\cb14     \cf19 \strokec19 std\cf15 \strokec15 ::\cf19 \strokec19 vector\cf15 \strokec15 <\cf19 \strokec19 std\cf15 \strokec15 ::vector<\cf19 \strokec19 cv\cf15 \strokec15 ::Point> > \cf21 \strokec21 approxedcontours\cf15 \strokec15 (\cf21 \strokec21 contours\cf15 \strokec15 .\cf20 \strokec20 size\cf15 \strokec15 ());\cf13 \strokec13  // Array for new contours\cf15 \cb1 \strokec15 \
+\cb14     \cf16 \strokec16 for\cf15 \strokec15  (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 i\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ; \cf21 \strokec21 i\cf15 \strokec15  < \cf21 \strokec21 contours\cf15 \strokec15 .\cf20 \strokec20 size\cf15 \strokec15 (); \cf21 \strokec21 i\cf15 \strokec15 ++)\cb1 \
+\cb14     \{\cb1 \
+\cb14         \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 approxPolyDP\cf15 \strokec15 (\cf21 \strokec21 contours\cf15 \strokec15 [\cf21 \strokec21 i\cf15 \strokec15 ], \cf21 \strokec21 approxedcontours\cf15 \strokec15 [\cf21 \strokec21 i\cf15 \strokec15 ], \cf22 \strokec22 10\cf15 \strokec15 , \cf17 \strokec17 true\cf15 \strokec15 );\cf13 \strokec13  // Approximate the contour\cf15 \cb1 \strokec15 \
+\cb14     \}\cb1 \
+\
+\cb14     \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 drawContours\cf15 \strokec15 (symbolImage, \cf21 \strokec21 approxedcontours\cf15 \strokec15 , -\cf22 \strokec22 1\cf15 \strokec15 , \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 ), \cf22 \strokec22 2\cf15 \strokec15 );\cf13 \strokec13  // Draw the approximated contours on the image\cf15 \cb1 \strokec15 \
+\
+\cb14     \cf19 \strokec19 cv\cf15 \strokec15 ::Rect bounding_rect = \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 boundingRect\cf15 \strokec15 (\cf21 \strokec21 approxedcontours\cf15 \strokec15 [\cf22 \strokec22 0\cf15 \strokec15 ]);\cf13 \strokec13  // Find the bounding rectangle around the contours\cf15 \cb1 \strokec15 \
+\cb14     \cf16 \strokec16 for\cf15 \strokec15  (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 i\cf15 \strokec15  = \cf22 \strokec22 1\cf15 \strokec15 ; \cf21 \strokec21 i\cf15 \strokec15  < \cf21 \strokec21 approxedcontours\cf15 \strokec15 .\cf20 \strokec20 size\cf15 \strokec15 (); \cf21 \strokec21 i\cf15 \strokec15 ++)\cb1 \
+\cb14     \{\cb1 \
+\cb14         bounding_rect |= \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 boundingRect\cf15 \strokec15 (\cf21 \strokec21 approxedcontours\cf15 \strokec15 [\cf21 \strokec21 i\cf15 \strokec15 ]);\cb1 \
+\cb14     \}\cb1 \
+\
+\cb14     \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 rectangle\cf15 \strokec15 (image_HSV1, bounding_rect, \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 Scalar\cf15 \strokec15 (\cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 ),LINE_8);\cf13 \strokec13  // Draw the bounding rectangle on the image\cf15 \cb1 \strokec15 \
+\
+\
+\cb14     \cf17 \strokec17 double\cf15 \strokec15  \cf21 \strokec21 maxArea\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ;\cb1 \
+\cb14     \cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 maxAreaIdx\cf15 \strokec15  = -\cf22 \strokec22 1\cf15 \strokec15 ;\cb1 \
+\cb14     \cf16 \strokec16 for\cf15 \strokec15  (\cf17 \strokec17 int\cf15 \strokec15  \cf21 \strokec21 i\cf15 \strokec15  = \cf22 \strokec22 0\cf15 \strokec15 ; \cf21 \strokec21 i\cf15 \strokec15  < \cf21 \strokec21 contours\cf15 \strokec15 .\cf20 \strokec20 size\cf15 \strokec15 (); \cf21 \strokec21 i\cf15 \strokec15 ++) \{\cb1 \
+\cb14         \cf17 \strokec17 double\cf15 \strokec15  \cf21 \strokec21 area\cf15 \strokec15  = \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 contourArea\cf15 \strokec15 (\cf21 \strokec21 contours\cf15 \strokec15 [\cf21 \strokec21 i\cf15 \strokec15 ]);\cb1 \
+\cb14             \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 area\cf15 \strokec15  > \cf21 \strokec21 maxArea\cf15 \strokec15 ) \{\cb1 \
+\cb14             \cf21 \strokec21 maxArea\cf15 \strokec15  = \cf21 \strokec21 area\cf15 \strokec15 ;\cb1 \
+\cb14             \cf21 \strokec21 maxAreaIdx\cf15 \strokec15  = \cf21 \strokec21 i\cf15 \strokec15 ;\cb1 \
+\cb14                                 \}\cb1 \
+\cb14         \}\cb1 \
+\
+\cb14     Rect \cf21 \strokec21 bRect\cf15 \strokec15  = \cf20 \strokec20 bounding_Rect\cf15 \strokec15 (\cf21 \strokec21 contours\cf15 \strokec15 [\cf21 \strokec21 maxAreaIdx\cf15 \strokec15 ]);\cb1 \
+\
+\cb14     Point2f \cf21 \strokec21 src_corners\cf15 \strokec15 [\cf22 \strokec22 4\cf15 \strokec15 ];\cb1 \
+\cb14     \cf21 \strokec21 src_corners\cf15 \strokec15 [\cf22 \strokec22 0\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 x\cf15 \strokec15 , \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 y\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 src_corners\cf15 \strokec15 [\cf22 \strokec22 1\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 x\cf15 \strokec15  + \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 width\cf15 \strokec15 , \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 y\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 src_corners\cf15 \strokec15 [\cf22 \strokec22 2\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 x\cf15 \strokec15  + \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 width\cf15 \strokec15 , \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 y\cf15 \strokec15  + \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 height\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 src_corners\cf15 \strokec15 [\cf22 \strokec22 3\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 x\cf15 \strokec15 , \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 y\cf15 \strokec15  + \cf21 \strokec21 bRect\cf15 \strokec15 .\cf21 \strokec21 height\cf15 \strokec15 );\cb1 \
+\
+\cb14     Point2f \cf21 \strokec21 dst_corners\cf15 \strokec15 [\cf22 \strokec22 4\cf15 \strokec15 ];\cb1 \
+\cb14     \cf21 \strokec21 dst_corners\cf15 \strokec15 [\cf22 \strokec22 0\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 dst_corners\cf15 \strokec15 [\cf22 \strokec22 1\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf22 \strokec22 349\cf15 \strokec15 , \cf22 \strokec22 0\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 dst_corners\cf15 \strokec15 [\cf22 \strokec22 2\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf22 \strokec22 349\cf15 \strokec15 , \cf22 \strokec22 349\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 dst_corners\cf15 \strokec15 [\cf22 \strokec22 3\cf15 \strokec15 ] = \cf20 \strokec20 Point2f\cf15 \strokec15 (\cf22 \strokec22 0\cf15 \strokec15 , \cf22 \strokec22 349\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13     //transform symbol\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 transform_matrix\cf15 \strokec15  = \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 getPerspectiveTransform\cf15 \strokec15 (\cf21 \strokec21 src_corners\cf15 \strokec15 , \cf21 \strokec21 dst_corners\cf15 \strokec15 );\cb1 \
+\cb14     Mat \cf21 \strokec21 output_image\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 warpPerspective\cf15 \strokec15 (symbolImage, \cf21 \strokec21 output_image\cf15 \strokec15 , \cf21 \strokec21 transform_matrix\cf15 \strokec15 , \cf19 \strokec19 cv\cf15 \strokec15 ::\cf20 \strokec20 Size\cf15 \strokec15 (\cf22 \strokec22 350\cf15 \strokec15 , \cf22 \strokec22 350\cf15 \strokec15 ));\cb1 \
+\
+\cf13 \cb14 \strokec13     //loads images\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 sym1\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 sym1\cf15 \strokec15  = \cf20 \strokec20 imread\cf15 \strokec15 (\cf18 \strokec18 "CirleRL.png"\cf15 \strokec15 );\cb1 \
+\cb14     Mat \cf21 \strokec21 sym2\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 sym2\cf15 \strokec15  = \cf20 \strokec20 imread\cf15 \strokec15 (\cf18 \strokec18 "StarGL.png"\cf15 \strokec15 );\cb1 \
+\cb14     Mat \cf21 \strokec21 sym3\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 sym3\cf15 \strokec15  = \cf20 \strokec20 imread\cf15 \strokec15 (\cf18 \strokec18 "TriangleBL.png"\cf15 \strokec15 );\cb1 \
+\cb14     Mat \cf21 \strokec21 sym4\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 sym4\cf15 \strokec15  = \cf20 \strokec20 imread\cf15 \strokec15 (\cf18 \strokec18 "UmbrellaYL.png"\cf15 \strokec15 );\cb1 \
+\
+\
+\cf13 \cb14 \strokec13     //checks if image has loaded\cf15 \cb1 \strokec15 \
+\cb14     \cf16 \strokec16 if\cf15 \strokec15  (\cf21 \strokec21 sym1\cf15 \strokec15 .\cf20 \strokec20 empty\cf15 \strokec15 () || \cf21 \strokec21 sym2\cf15 \strokec15 .\cf20 \strokec20 empty\cf15 \strokec15 () || \cf21 \strokec21 sym3\cf15 \strokec15 .\cf20 \strokec20 empty\cf15 \strokec15 () || \cf21 \strokec21 sym4\cf15 \strokec15 .\cf20 \strokec20 empty\cf15 \strokec15 ()) \{\cb1 \
+\cf13 \cb14 \strokec13     // check if any of the images failed to load\cf15 \cb1 \strokec15 \
+\cb14     \cf20 \strokec20 printf\cf15 \strokec15 (\cf18 \strokec18 "Failed to load image(s)!\cf23 \strokec23 \\n\cf18 \strokec18 "\cf15 \strokec15 );\cb1 \
+\
+\cb14     \}\cb1 \
+\
+\cb14     \cf21 \strokec21 imshow\cf15 \strokec15 (\cf18 \strokec18 "s1"\cf15 \strokec15 , \cf21 \strokec21 sym1\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 imshow\cf15 \strokec15 (\cf18 \strokec18 "s2"\cf15 \strokec15 ,\cf21 \strokec21 sym2\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 imshow\cf15 \strokec15 (\cf18 \strokec18 "s3"\cf15 \strokec15 ,\cf21 \strokec21 sym3\cf15 \strokec15 );\cb1 \
+\cb14     \cf21 \strokec21 imshow\cf15 \strokec15 (\cf18 \strokec18 "s4"\cf15 \strokec15 , \cf21 \strokec21 sym4\cf15 \strokec15 );\cb1 \
+\
+\cf13 \cb14 \strokec13     //converts to gray scale\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 sym1Gray\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 cvtColor\cf15 \strokec15 (\cf21 \strokec21 sym1\cf15 \strokec15 , \cf21 \strokec21 sym1Gray\cf15 \strokec15 , COLOR_BGR2GRAY);\cb1 \
+\cb14     Mat \cf21 \strokec21 sym2Gray\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 cvtColor\cf15 \strokec15 (\cf21 \strokec21 sym2\cf15 \strokec15 , \cf21 \strokec21 sym2Gray\cf15 \strokec15 , COLOR_BGR2GRAY);\cb1 \
+\cb14     Mat \cf21 \strokec21 sym3Gray\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 cvtColor\cf15 \strokec15 (\cf21 \strokec21 sym3\cf15 \strokec15 , \cf21 \strokec21 sym3Gray\cf15 \strokec15 , COLOR_BGR2GRAY);\cb1 \
+\cb14     Mat \cf21 \strokec21 sym4Gray\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 cvtColor\cf15 \strokec15 (\cf21 \strokec21 sym4\cf15 \strokec15 , \cf21 \strokec21 sym4Gray\cf15 \strokec15 , COLOR_BGR2GRAY);\cb1 \
+\
+\cf13 \cb14 \strokec13     //converts gray image to binary\cf15 \cb1 \strokec15 \
+\cb14     Mat \cf21 \strokec21 sym1Bin\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 threshold\cf15 \strokec15 (\cf21 \strokec21 sym1Gray\cf15 \strokec15 , \cf21 \strokec21 sym1Bin\cf15 \strokec15 , \cf22 \strokec22 200\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 , THRESH_BINARY);\cb1 \
+\cb14     Mat \cf21 \strokec21 sym2Bin\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 threshold\cf15 \strokec15 (\cf21 \strokec21 sym2Gray\cf15 \strokec15 , \cf21 \strokec21 sym2Bin\cf15 \strokec15 , \cf22 \strokec22 200\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 , THRESH_BINARY);\cb1 \
+\cb14     Mat \cf21 \strokec21 sym3Bin\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 threshold\cf15 \strokec15 (\cf21 \strokec21 sym3Gray\cf15 \strokec15 , \cf21 \strokec21 sym3Bin\cf15 \strokec15 , \cf22 \strokec22 200\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 , THRESH_BINARY);\cb1 \
+\cb14     Mat \cf21 \strokec21 sym4Bin\cf15 \strokec15 ;\cb1 \
+\cb14     \cf21 \strokec21 threshold\cf15 \strokec15 (\cf21 \strokec21 sym4Gray\cf15 \strokec15 , \cf21 \strokec21 sym4Bin\cf15 \strokec15 , \cf22 \strokec22 200\cf15 \strokec15 , \cf22 \strokec22 255\cf15 \strokec15 , THRESH_BINARY);\cb1 \
+\
+\cf13 \cb14 \strokec13     //compares frame to new binary image\cf15 \cb1 \strokec15 \
+\cb14     *\cf21 \strokec21 match1\cf15 \strokec15  = \cf20 \strokec20 compareImages\cf15 \strokec15 (\cf21 \strokec21 output_image\cf15 \strokec15 ,\cf21 \strokec21 sym1Bin\cf15 \strokec15 );\cb1 \
+\cb14     *\cf21 \strokec21 match2\cf15 \strokec15  = \cf20 \strokec20 compareImages\cf15 \strokec15 (\cf21 \strokec21 output_image\cf15 \strokec15 ,\cf21 \strokec21 sym2Bin\cf15 \strokec15 );\cb1 \
+\cb14     *\cf21 \strokec21 match3\cf15 \strokec15  = \cf20 \strokec20 compareImages\cf15 \strokec15 (\cf21 \strokec21 output_image\cf15 \strokec15 ,\cf21 \strokec21 sym3Bin\cf15 \strokec15 );\cb1 \
+\cb14     *\cf21 \strokec21 match4\cf15 \strokec15  = \cf20 \strokec20 compareImages\cf15 \strokec15 (\cf21 \strokec21 output_image\cf15 \strokec15 ,\cf21 \strokec21 sym4Bin\cf15 \strokec15 );\cb1 \
+\cb14 \}\cb1 \
+\cb14 \}\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf6 \cb3 \outl0\strokewidth0 \
+//Arduino code \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \outl0\strokewidth0 \strokec24 //nano code that actually works/only I2C\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf16 \cb25 \strokec16 #include\cf26 \strokec26  \cf27 \strokec27 <Wire.h>\cf26 \cb1 \strokec26 \
+\cf16 \cb25 \strokec16 #define\cf26 \strokec26  \cf28 \strokec28 I2C_SLAVE_ADDR\cf26 \strokec26  0x\cf27 \strokec27 04\cf24 \strokec24  // 4 in hexadecimal\cf26 \cb1 \strokec26 \
+\cf16 \cb25 \strokec16 #include\cf26 \strokec26  \cf27 \strokec27 <Servo.h>\cf26 \strokec26     \cf24 \strokec24 //include the servo library\cf26 \cb1 \strokec26 \
+\cf16 \cb25 \strokec16 #define\cf26 \strokec26  \cf28 \strokec28 servoPin\cf26 \strokec26  \cf27 \strokec27 4\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25 Servo myservo;\cf24 \strokec24         // create servo object to control a servo\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf29 \cb25 \strokec29 float\cf26 \strokec26  steeringAngle;\cf24 \strokec24   // variable to store the servo position\cf26 \cb1 \strokec26 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf16 \cb25 \strokec16 #define\cf26 \strokec26  \cf28 \strokec28 enA\cf26 \strokec26  \cf27 \strokec27 5\cf24 \strokec24    //EnableA command line - should be a PWM pin\cf26 \cb1 \strokec26 \
+\cf16 \cb25 \strokec16 #define\cf26 \strokec26  \cf28 \strokec28 enB\cf26 \strokec26  \cf27 \strokec27 6\cf24 \strokec24    //EnableB command line - should be a PWM pin\cf26 \cb1 \strokec26 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24 //name the motor control pins - replace the CHANGEME with your pin number, digital pins do not need the 'D' prefix whereas analogue pins need the 'A' prefix\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf16 \cb25 \strokec16 #define\cf26 \strokec26  \cf28 \strokec28 INa\cf26 \strokec26  A0\cf24 \strokec24   //Channel A direction \cf26 \cb1 \strokec26 \
+\cf16 \cb25 \strokec16 #define\cf26 \strokec26  \cf28 \strokec28 INb\cf26 \strokec26  A1\cf24 \strokec24   //Channel A direction \cf26 \cb1 \strokec26 \
+\cf16 \cb25 \strokec16 #define\cf26 \strokec26  \cf28 \strokec28 INc\cf26 \strokec26  A2\cf24 \strokec24   //Channel B direction \cf26 \cb1 \strokec26 \
+\cf16 \cb25 \strokec16 #define\cf26 \strokec26  \cf28 \strokec28 INd\cf26 \strokec26  A3\cf24 \strokec24   //Channel B direction \cf26 \cb1 \strokec26 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   //variables\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf29 \strokec29 int\cf26 \strokec26  leftMotor_speed = \cf27 \strokec27 255\cf26 \strokec26 ;\cb1 \
+\cb25   \cf29 \strokec29 int\cf26 \strokec26  rightMotor_speed = \cf27 \strokec27 255\cf26 \strokec26 ;\cb1 \
+\cb25   \cf29 \strokec29 int\cf26 \strokec26  baseSpeed = \cf27 \strokec27 255\cf26 \strokec26 ;\cb1 \
+\cb25   \cf29 \strokec29 int\cf26 \strokec26  servoAngle;\cb1 \
+\cb25   \cf29 \strokec29 int\cf26 \strokec26  centreAngle = \cf27 \strokec27 85\cf26 \strokec26 ;\cb1 \
+\cb25   \cf29 \strokec29 double\cf26 \strokec26  Kp = \cf27 \strokec27 0.5\cf26 \strokec26  ;\cb1 \
+\cb25   \cf29 \strokec29 double\cf26 \strokec26  Kd = \cf27 \strokec27 0.5\cf26 \strokec26 ;\cb1 \
+\cb25   \cf29 \strokec29 double\cf26 \strokec26  Ki = \cf27 \strokec27 0.5\cf26 \strokec26 ;\cb1 \
+\cb25   \cf29 \strokec29 double\cf26 \strokec26  K = \cf27 \strokec27 0.5\cf26 \strokec26 ;\cb1 \
+\cb25   \cf29 \strokec29 int\cf26 \strokec26  error = \cf27 \strokec27 0\cf26 \strokec26 ;\cb1 \
+\cb25   \cf29 \strokec29 double\cf26 \strokec26  cumulative_error = \cf27 \strokec27 0\cf26 \strokec26 ;\cb1 \
+\cb25   \cf29 \strokec29 double\cf26 \strokec26  prev_error = \cf27 \strokec27 0\cf26 \strokec26 ;\cb1 \
+\
+\cb25 byte speedSetting = \cf27 \strokec27 0\cf26 \strokec26 ;\cf24 \strokec24   //initial speed = 0\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24 /*\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24 //Function Prototypes\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24 void goForwards();\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24 void goBackwards();\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24 void stopMotors();\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24 void goClockwise();\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24 void goAntiClockwise();\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24 void receiveEvent(int numBytes);\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24 void motors(int leftSpeed, int rightSpeed);\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24 void moveSteering();\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24 */\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf29 \cb25 \strokec29 void\cf26 \strokec26  \cf28 \strokec28 setup\cf26 \strokec26 () \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   //initialise serial communication\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 println\cf26 \strokec26 (\cf27 \strokec27 "Arduino Nano is Running"\cf26 \strokec26 );\cf24 \strokec24  //sanity check\cf26 \cb1 \strokec26 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 begin\cf26 \strokec26 (\cf27 \strokec27 9600\cf26 \strokec26 );\cf24 \strokec24 // open the serial port at 9600 bps:\cf26 \cb1 \strokec26 \
+\cb25   \cf28 \strokec28 Wire\cf26 \strokec26 .\cf28 \strokec28 begin\cf26 \strokec26 (0x\cf27 \strokec27 04\cf26 \strokec26 );\cf24 \strokec24  //Set Arduino up as an I2C slave at address 0x07\cf26 \cb1 \strokec26 \
+\cb25   \cb1 \
+\cb25   \cf28 \strokec28 myservo\cf26 \strokec26 .\cf28 \strokec28 attach\cf26 \strokec26 (servoPin);\cf24 \strokec24   //attach our servo object to pin D4\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   //the Servo library takes care of defining the PinMode declaration (libraries/Servo/src/avr/Servo.cpp line 240)\cf26 \cb1 \strokec26 \
+\
+\cf24 \cb25 \strokec24   //configure the motor control pins as outputs\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 pinMode\cf26 \strokec26 (INa, OUTPUT);\cb1 \
+\cb25   \cf28 \strokec28 pinMode\cf26 \strokec26 (INb, OUTPUT);\cb1 \
+\cb25   \cf28 \strokec28 pinMode\cf26 \strokec26 (INc, OUTPUT);\cb1 \
+\cb25   \cf28 \strokec28 pinMode\cf26 \strokec26 (INd, OUTPUT);\cb1 \
+\cb25   \cf28 \strokec28 pinMode\cf26 \strokec26 (enA, OUTPUT);\cb1 \
+\cb25   \cf28 \strokec28 pinMode\cf26 \strokec26 (enB, OUTPUT);   \cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   //initialise serial communication\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 begin\cf26 \strokec26 (\cf27 \strokec27 9600\cf26 \strokec26 );\cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 println\cf26 \strokec26 (\cf27 \strokec27 "Arduino Nano is Running"\cf26 \strokec26 );\cf24 \strokec24  //sanity check\cf26 \cb1 \strokec26 \
+\
+\cb25   speedSetting = \cf27 \strokec27 255\cf26 \strokec26 ;\cb1 \
+\cb25   \cf28 \strokec28 motors\cf26 \strokec26 (speedSetting, speedSetting);\cf24 \strokec24  //make a call to the "motors" function and provide it with a value for each of the 2 motors - can be different for each motor - using same value here for expedience\cf26 \cb1 \strokec26 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 print\cf26 \strokec26 (\cf27 \strokec27 "Motor Speeds: "\cf26 \strokec26 );\cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 println\cf26 \strokec26 (speedSetting); \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   //to ensure the servo angle left is correct\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 myservo\cf26 \strokec26 .\cf28 \strokec28 write\cf26 \strokec26 (\cf27 \strokec27 0\cf26 \strokec26 );\cb1 \
+\cb25   \cf28 \strokec28 delay\cf26 \strokec26 (\cf27 \strokec27 1000\cf26 \strokec26 );\cb1 \
+\cb25   \cf28 \strokec28 myservo\cf26 \strokec26 .\cf28 \strokec28 write\cf26 \strokec26 (\cf27 \strokec27 80\cf26 \strokec26 );\cb1 \
+\cb25   \cf28 \strokec28 delay\cf26 \strokec26 (\cf27 \strokec27 1000\cf26 \strokec26 );\cb1 \
+\cb25   \cf28 \strokec28 myservo\cf26 \strokec26 .\cf28 \strokec28 write\cf26 \strokec26 (\cf27 \strokec27 180\cf26 \strokec26 );\cb1 \
+\cb25   \cf28 \strokec28 delay\cf26 \strokec26 (\cf27 \strokec27 1000\cf26 \strokec26 );\cb1 \
+\cb25   \cf28 \strokec28 myservo\cf26 \strokec26 .\cf28 \strokec28 write\cf26 \strokec26 (\cf27 \strokec27 80\cf26 \strokec26 );\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   //Wire.onRequest(requestEvent); //Prepare to send data\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 Wire\cf26 \strokec26 .\cf28 \strokec28 onReceive\cf26 \strokec26 (receiveEvent);\cf24 \strokec24  //Prepare to recieve data\cf26 \cb1 \strokec26 \
+\cb25   \cb1 \
+\cb25 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf29 \cb25 \strokec29 void\cf26 \strokec26  \cf28 \strokec28 loop\cf26 \strokec26 () \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf29 \cb25 \strokec29 void\cf26 \strokec26  \cf28 \strokec28 receiveEvent\cf26 \strokec26 (\cf29 \strokec29 int\cf26 \strokec26  numBytes)\{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   //Set Up Vars\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf29 \strokec29 int\cf26 \strokec26  receive_int=\cf27 \strokec27 0\cf26 \strokec26 ;\cb1 \
+\cb25   \cf29 \strokec29 int\cf26 \strokec26  count=\cf27 \strokec27 0\cf26 \strokec26 ;\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   //We'll recieve one byte at a time. Stop when none left\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf16 \strokec16 while\cf26 \strokec26 (\cf28 \strokec28 Wire\cf26 \strokec26 .\cf28 \strokec28 available\cf26 \strokec26 ())\cb1 \
+\cb25   \{\cb1 \
+\cb25     \cf29 \strokec29 char\cf26 \strokec26  c = \cf28 \strokec28 Wire\cf26 \strokec26 .\cf28 \strokec28 read\cf26 \strokec26 ();\cf24 \strokec24     // receive a byte as character\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24     //Create Int from the Byte Array\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25     receive_int = c << (\cf27 \strokec27 8\cf26 \strokec26  * count) | receive_int;\cb1 \
+\cb25     count++;\cb1 \
+\cb25   \}\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   //Print the Int out.\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 goForwards\cf26 \strokec26 ();\cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 print\cf26 \strokec26 (\cf27 \strokec27 "Received Number: "\cf26 \strokec26 ); \cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 println\cf26 \strokec26 (receive_int);\cb1 \
+\cb25   \cf29 \strokec29 int\cf26 \strokec26  error = receive_int;\cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 print\cf26 \strokec26 (\cf27 \strokec27 "Error: "\cf26 \strokec26 ); \cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 println\cf26 \strokec26 (error);\cb1 \
+\cb25   \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   // implement PID control\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   error = (\cf29 \strokec29 int\cf26 \strokec26 )servoAngle - \cf27 \strokec27 90\cf26 \strokec26 ;\cb1 \
+\cb25   \cf29 \strokec29 double\cf26 \strokec26  P = Kp * error;\cb1 \
+\cb25   cumulative_error += error;\cb1 \
+\cb25   \cf29 \strokec29 double\cf26 \strokec26  I = Ki * cumulative_error;\cb1 \
+\cb25   \cf29 \strokec29 double\cf26 \strokec26  D = Kd * (error - prev_error);\cb1 \
+\cb25   \cf29 \strokec29 double\cf26 \strokec26  PID = P + I + D;\cb1 \
+\cb25   prev_error = error;\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   // adjust servo angle and motor speeds\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   servoAngle = \cf27 \strokec27 85\cf26 \strokec26  + (\cf29 \strokec29 int\cf26 \strokec26 )PID;\cb1 \
+\cb25   leftMotor_speed = baseSpeed + (\cf29 \strokec29 int\cf26 \strokec26 )(K * PID);\cb1 \
+\cb25   rightMotor_speed = baseSpeed - (\cf29 \strokec29 int\cf26 \strokec26 )(K * PID);\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   // print debug info\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 print\cf26 \strokec26 (\cf27 \strokec27 "P: "\cf26 \strokec26 ); \cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 println\cf26 \strokec26 (P);\cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 print\cf26 \strokec26 (\cf27 \strokec27 "I: "\cf26 \strokec26 ); \cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 println\cf26 \strokec26 (I);\cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 print\cf26 \strokec26 (\cf27 \strokec27 "D: "\cf26 \strokec26 ); \cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 println\cf26 \strokec26 (D);\cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 print\cf26 \strokec26 (\cf27 \strokec27 "PID: "\cf26 \strokec26 ); \cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 println\cf26 \strokec26 (PID);\cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 print\cf26 \strokec26 (\cf27 \strokec27 "Servo Angle: "\cf26 \strokec26 ); \cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 println\cf26 \strokec26 (servoAngle);\cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 print\cf26 \strokec26 (\cf27 \strokec27 "Left Motor Speed: "\cf26 \strokec26 ); \cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 println\cf26 \strokec26 (leftMotor_speed);\cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 print\cf26 \strokec26 (\cf27 \strokec27 "Right Motor Speed: "\cf26 \strokec26 ); \cb1 \
+\cb25   \cf28 \strokec28 Serial\cf26 \strokec26 .\cf28 \strokec28 println\cf26 \strokec26 (rightMotor_speed);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   /*\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24   double PID = (Kp*error)+(Ki*cumulative_error)+(Kd*(error-prev_error));\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24   Serial.print("PID: "); \cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24   Serial.println(PID);\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24   //cumulative_error += error;\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24   //prev_error = error;\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24   servoAngle = 85 + PID;\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24   leftMotor_speed = baseSpeed + K*PID;\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24   rightMotor_speed = baseSpeed - K*PID;\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24   */\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf29 \cb25 \strokec29 void\cf26 \strokec26  \cf28 \strokec28 motors\cf26 \strokec26 (\cf29 \strokec29 int\cf26 \strokec26  leftSpeed, \cf29 \strokec29 int\cf26 \strokec26  rightSpeed) \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   //set individual motor speed\cf26 \cb1 \strokec26 \
+\cf24 \cb25 \strokec24   //direction is set separately\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 analogWrite\cf26 \strokec26 (enA, leftSpeed);\cb1 \
+\cb25   \cf28 \strokec28 analogWrite\cf26 \strokec26 (enB, rightSpeed);\cb1 \
+\cb25 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf29 \cb25 \strokec29 void\cf26 \strokec26  \cf28 \strokec28 moveSteering\cf26 \strokec26 () \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24   //you may need to change the maximum and minimum servo angle to have the largest steering motion\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf29 \strokec29 int\cf26 \strokec26  maxAngle = \cf27 \strokec27 180\cf26 \strokec26 ;\cb1 \
+\cb25   \cf29 \strokec29 int\cf26 \strokec26  minAngle = \cf27 \strokec27 0\cf26 \strokec26 ;\cb1 \
+\cb25   \cf28 \strokec28 myservo\cf26 \strokec26 .\cf28 \strokec28 write\cf26 \strokec26 (\cf27 \strokec27 0\cf26 \strokec26 );\cb1 \
+\cb25   \cf16 \strokec16 for\cf26 \strokec26  (steeringAngle = minAngle; steeringAngle <= maxAngle; steeringAngle += \cf27 \strokec27 1\cf26 \strokec26 ) \{\cf24 \strokec24  //goes from minAngle to maxAngle (degrees)\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24     //in steps of 1 degree\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25     \cf28 \strokec28 myservo\cf26 \strokec26 .\cf28 \strokec28 write\cf26 \strokec26 (steeringAngle);\cf24 \strokec24    //tell servo to go to position in variable 'steeringAngle'\cf26 \cb1 \strokec26 \
+\cb25     \cf28 \strokec28 delay\cf26 \strokec26 (\cf27 \strokec27 15\cf26 \strokec26 );\cf24 \strokec24                       //waits 15ms for the servo to reach the position\cf26 \cb1 \strokec26 \
+\cb25   \}\cb1 \
+\cb25   \cf16 \strokec16 for\cf26 \strokec26  (steeringAngle = maxAngle; steeringAngle >= minAngle; steeringAngle -= \cf27 \strokec27 1\cf26 \strokec26 ) \{\cf24 \strokec24  // goes from maxAngle to minAngle (degrees)\cf26 \cb1 \strokec26 \
+\cb25     \cf28 \strokec28 myservo\cf26 \strokec26 .\cf28 \strokec28 write\cf26 \strokec26 (steeringAngle);\cf24 \strokec24    //tell servo to go to position in variable 'steeringAngle'\cf26 \cb1 \strokec26 \
+\cb25     \cf28 \strokec28 delay\cf26 \strokec26 (\cf27 \strokec27 15\cf26 \strokec26 );\cf24 \strokec24                       //waits 15 ms for the servo to reach the position\cf26 \cb1 \strokec26 \
+\cb25   \}\cb1 \
+\cb25 \}\cb1 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+\cf24 \cb25 \strokec24 //for each of the below function, two of the 'IN' variables must be HIGH, and two LOW in order to move the wheels - use a trial and error approach to determine the correct combination for your EEEBot\cf26 \cb1 \strokec26 \
+\pard\pardeftab720\partightenfactor0
+\cf29 \cb25 \strokec29 void\cf26 \strokec26  \cf28 \strokec28 goForwards\cf26 \strokec26 () \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INa, HIGH);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INb, LOW);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INc, HIGH);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INd, LOW);\cb1 \
+\cb25 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf29 \cb25 \strokec29 void\cf26 \strokec26  \cf28 \strokec28 goBackwards\cf26 \strokec26 () \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INa, LOW);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INb, HIGH);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INc, LOW);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INd, HIGH);\cb1 \
+\cb25 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf29 \cb25 \strokec29 void\cf26 \strokec26  \cf28 \strokec28 goClockwise\cf26 \strokec26 () \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INa, HIGH);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INb, LOW);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INc, LOW);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INd, HIGH);\cb1 \
+\cb25 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf29 \cb25 \strokec29 void\cf26 \strokec26  \cf28 \strokec28 goAntiClockwise\cf26 \strokec26 () \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INa, LOW);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INb, HIGH);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INc, HIGH);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INd, LOW);\cb1 \
+\cb25 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf29 \cb25 \strokec29 void\cf26 \strokec26  \cf28 \strokec28 stopMotors\cf26 \strokec26 () \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf26 \cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INa, LOW);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INb, LOW);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INc, LOW);\cb1 \
+\cb25   \cf28 \strokec28 digitalWrite\cf26 \strokec26 (INd, LOW);\cb1 \
+\cb25 \}\cb1 \
+\
+}
